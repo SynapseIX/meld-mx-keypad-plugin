@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- A version-specific run may use a different output directory. Always
+         prefer the explicitly selected host, never stale DLLs under bin/. -->
+    <AssemblySearchPaths>{HintPathFromItem};{TargetFrameworkDirectory};{RawFileName}</AssemblySearchPaths>
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
+    <HostAssemblyDir Condition="'$(HostAssemblyDir)' == ''">/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/</HostAssemblyDir>
+    <PluginAssemblyPath Condition="'$(PluginAssemblyPath)' == ''">$(MSBuildThisFileDirectory)../bin/Release/bin/MeldMxKeypadPlugin.dll</PluginAssemblyPath>
+    <SkiaSharpAssemblyPath Condition="'$(SkiaSharpAssemblyPath)' == ''">$(HostAssemblyDir)SkiaSharp.dll</SkiaSharpAssemblyPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../action-check/MockMeld.cs" Link="MockMeld.cs" />
+    <Reference Include="PluginApi"><HintPath>$(HostAssemblyDir)PluginApi.dll</HintPath></Reference>
+    <Reference Include="LoupedeckShared"><HintPath>$(HostAssemblyDir)LoupedeckShared.dll</HintPath></Reference>
+    <Reference Include="LoupedeckService"><HintPath>$(HostAssemblyDir)LoupedeckService.dll</HintPath></Reference>
+    <Reference Include="SkiaSharp"><HintPath>$(SkiaSharpAssemblyPath)</HintPath></Reference>
+    <Reference Include="MeldMxKeypadPlugin"><HintPath>$(PluginAssemblyPath)</HintPath></Reference>
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.8"
+      Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+  </ItemGroup>
+</Project>

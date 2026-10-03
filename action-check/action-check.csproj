@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PluginApiDir Condition="'$(PluginApiDir)' == '' and $(OS) == 'Windows_NT'">C:\Program Files\Logi\LogiPluginService\</PluginApiDir>
+    <PluginApiDir Condition="'$(PluginApiDir)' == '' and $(OS) != 'Windows_NT'">/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/</PluginApiDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../src/MeldMxKeypadPlugin.csproj" AdditionalProperties="SkipHostActions=true" />
+    <Reference Include="PluginApi"><HintPath>$(PluginApiDir)PluginApi.dll</HintPath></Reference>
+    <Reference Include="LoupedeckShared"><HintPath>$(PluginApiDir)LoupedeckShared.dll</HintPath></Reference>
+    <Reference Include="SkiaSharp"><HintPath>$(PluginApiDir)SkiaSharp.dll</HintPath></Reference>
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.8"
+      Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
+  </ItemGroup>
+</Project>
