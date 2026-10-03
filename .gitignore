@@ -1,0 +1,93 @@
+# .NET build and publish outputs (plugin and all check projects)
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+
+# Generated Logitech installers and package hashes
+*.lplug4
+PackageHash.bin
+
+# Local .NET / NuGet / Logitech SDK dependencies
+# Use installed SDK assemblies; do not commit proprietary binaries.
+.dotnet/
+.tools/
+.nuget/
+[Pp]ackages/
+*.nupkg
+*.snupkg
+*.dll
+*.exe
+*.pdb
+*.dylib
+*.so
+*.so.*
+
+# Test runs, coverage and diagnostic output
+# Keep curated screenshots and test evidence under docs/ in Git.
+test-results/
+[Tt]est[Rr]esults/
+coverage/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+*.trx
+*.binlog
+*.log
+logs/
+mono_crash.*
+core
+core.[0-9]*
+
+# Visual Studio, Rider and other per-user IDE state
+.vs/
+.idea/
+*.user
+*.rsuser
+*.suo
+*.userprefs
+*.userosscache
+*.sln.docstates
+*.sln.iml
+*.DotSettings.user
+_ReSharper*/
+.history/
+
+# Keep shareable VS Code configuration
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Local environment files and signing credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pfx
+*.p12
+
+# Python icon-generation tools: environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# macOS / Windows metadata and editor temporary files
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*.tmp
+*~
+
+# Keep source icons, package metadata/templates, tools/ scripts,
+# dependency lockfiles, README, LICENSE and docs/ evidence tracked.
