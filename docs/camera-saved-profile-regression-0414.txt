@@ -1,0 +1,24 @@
+/workspace/scratch/bbb1c98afae2/MeldCameraPickerPrototype/MeldMxKeypadPlugin/host-render-check/host-render-check.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+Host assembly: LoupedeckService 6.4.2.3414 SHA256=B90E3EE48527425A5EF53A7CA4FFBDDBF3135DF4A91C4A437E5A9A8D9C8C1AC1
+Host assembly: PluginApi 6.4.2.3414 SHA256=D0C2EF168435423DB870103C2DDA080CB625009BB502A0AFF47115F5A5D6D90A
+Host assembly: LoupedeckShared 6.4.2.3414 SHA256=22A2AC09C87B1826FFCED215FCD2ACC9F8C1F7B376564F7DAA54EFB6A35C93F7
+Actual host: LoupedeckService, Version=6.4.2.3414, Culture=neutral, PublicKeyToken=null
+NEW ToggleStreamCommand/unknown: 1322 colored pixels
+NEW ToggleStreamCommand/inactive: 1722 colored pixels
+NEW ToggleStreamCommand/active: 1731 colored pixels
+NEW ToggleRecordingCommand/unknown: 2068 colored pixels
+NEW ToggleRecordingCommand/inactive: 2405 colored pixels
+NEW ToggleRecordingCommand/active: 2225 colored pixels
+NEW ToggleMicrophoneCommand/unknown: 1590 colored pixels
+NEW ToggleMicrophoneCommand/inactive: 1488 colored pixels
+NEW ToggleMicrophoneCommand/active: 1763 colored pixels
+NEW ToggleVirtualCameraCommand/unknown: 1938 colored pixels
+NEW ToggleVirtualCameraCommand/inactive: 2420 colored pixels
+NEW ToggleVirtualCameraCommand/active: 2442 colored pixels
+NEW SaveClipCommand/default: 1566 colored pixels
+NEW ScreenshotCommand/default: 1463 colored pixels
+PASS: service default-template factory and renderer: transparent larger symbol, top padding, one native scene caption.
+Saved camera: $MeldMxKeypad___Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand___0B94ACD6D8CA4D21BAA15258CB72F600-151A490AC46144198B86A8CB9650E295; selected layer: T0JTQk9UIE1lZXQgMiBTdHJlYW1DYW1lcmE=:4
+BEFORE: raw layer state=active, saved-button state=unknown
+AFTER: raw layer state=inactive, saved-button state=unknown, image changed=False
+REPRODUCED: native list-profile alias stays unknown and its image is unchanged although the layer toggles.

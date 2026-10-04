@@ -2,9 +2,9 @@ type: plugin4
 name: MeldMxKeypad
 displayName: Meld Studio
 description: Control Meld Studio scenes, audio, streaming and recording
-version: 0.4.14
+version: 0.4.16
 author: SynapseIX
-copyright: Copyright 2026 Jorge Tapia
+copyright: © Copyright 2026 SynapseIX. All rights reserved.
 pluginFileName: MeldMxKeypadPlugin.dll
 pluginFolderWin: bin
 pluginFolderMac: bin
@@ -12,3 +12,4 @@ minimumLoupedeckVersion: 6.3
 license: MIT
 licenseUrl: https://opensource.org/licenses/MIT
 homePageUrl: https://github.com/SynapseIX/meld-mx-keypad-plugin
+supportPageUrl: https://github.com/SynapseIX/meld-mx-keypad-plugin/issues

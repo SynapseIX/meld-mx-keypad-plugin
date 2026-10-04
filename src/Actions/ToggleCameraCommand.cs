@@ -7,13 +7,15 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-// Use the same native multistate display path as Toggle Microphone. A list
-// profile action keeps one catalog entry and a picker for the camera target.
+// Use the same native multistate image path as Toggle Microphone. Options+
+// renders list assignments using a saved alias; resolve it to the picker value
+// before reading Meld, and publish state under both forms of the selection.
 public sealed class ToggleCameraCommand : PluginMultistateDynamicCommand
 {
     private const String Automatic = "automatic";
     private readonly Object _stateLock = new();
     private readonly HashSet<String> _selections = new(StringComparer.Ordinal);
+    private readonly CameraProfileSelections _profiles = new();
     private String _pickerSignature;
     private CancellationTokenSource _pollCancellation = new();
 
@@ -57,8 +59,9 @@ public sealed class ToggleCameraCommand : PluginMultistateDynamicCommand
             MeldSelection.BelongsToScene(x, scene, items)).ToArray());
     }
 
-    private static (MeldItem Scene, MeldItem Camera) Resolve(String layerKey)
+    private (MeldItem Scene, MeldItem Camera) Resolve(String layerKey)
     {
+        layerKey = _profiles.Resolve(layerKey);
         if (String.IsNullOrWhiteSpace(layerKey)) return (null, null);
         var (scene, layers) = CurrentSceneLayers(MeldClient.Instance.Items());
         if (scene == null) return (null, null);
@@ -70,12 +73,10 @@ public sealed class ToggleCameraCommand : PluginMultistateDynamicCommand
 
     private Int32 SynchronizeState(String selection)
     {
-        // The catalog requests artwork before a list value has been chosen.
-        // The SDK's per-parameter state setter requires a non-null value.
         if (selection == null) return 0;
         lock (_stateLock)
         {
-            if (!String.IsNullOrEmpty(selection)) _selections.Add(selection);
+            _selections.Add(selection);
             var state = Resolve(selection).Camera?.Visible switch { true => 2, false => 1, _ => 0 };
             this.SetCurrentState(selection, state);
             return state;
@@ -90,6 +91,8 @@ public sealed class ToggleCameraCommand : PluginMultistateDynamicCommand
             _pollCancellation = new CancellationTokenSource();
         }
         MeldClient.Instance.Changed += Refresh;
+        _profiles.Changed += Refresh;
+        _profiles.Start();
         Refresh();
         return true;
     }
@@ -98,6 +101,8 @@ public sealed class ToggleCameraCommand : PluginMultistateDynamicCommand
     {
         _pollCancellation.Cancel();
         MeldClient.Instance.Changed -= Refresh;
+        _profiles.Changed -= Refresh;
+        _profiles.Stop();
         return true;
     }
 
@@ -107,8 +112,9 @@ public sealed class ToggleCameraCommand : PluginMultistateDynamicCommand
         String[] selections;
         lock (_stateLock)
         {
-            _selections.Add(Automatic);
-            foreach (var layer in CurrentSceneLayers(items).Layers) _selections.Add(MeldSelection.Key(layer));
+            foreach (var key in CurrentSceneLayers(items).Layers.Select(MeldSelection.Key).Prepend(Automatic))
+                _selections.Add(key);
+            foreach (var alias in _profiles.Aliases) _selections.Add(alias);
             selections = _selections.ToArray();
         }
         foreach (var selection in selections) SynchronizeState(selection);
@@ -130,11 +136,7 @@ public sealed class ToggleCameraCommand : PluginMultistateDynamicCommand
         return String.Empty;
     }
 
-    protected override String GetCommandDisplayName(String parameter, Int32 state, PluginImageSize size)
-    {
-        SynchronizeState(parameter);
-        return String.Empty;
-    }
+    protected override String GetCommandDisplayName(String parameter, Int32 state, PluginImageSize size) => String.Empty;
 
     protected override BitmapImage GetCommandImage(String parameter, PluginImageSize size) =>
         Icon(SynchronizeState(parameter));

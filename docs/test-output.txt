@@ -1,0 +1,9 @@
+/workspace/scratch/bbb1c98afae2/MeldCameraPickerPrototype/MeldMxKeypadPlugin/action-check/action-check.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
+PASS: all image callbacks including unspecified size, native packaged state lookup, icon-only templates, scene glyph and caption.
+PASS: one native camera list picker populates without editor setup; microphone-style multistate command.
+PASS: 14-scene picker, persisted selection with new IDs, every outgoing action, press twice, and external state changes.
+PASS: custom camera picker, grouped layers, duplicate names, current scene, and replacement IDs; scene backgrounds follow live selection.
+PASS: one scene-agnostic camera picker, scene switching, legacy settings, native current-scene IDs, source exclusions and empty states.
+PASS: mixed-case schema, names and hierarchy; original RPC IDs; global and scene microphone scope; ambiguous/unknown targets remain inactive.
+PASS: unknown status, unavailable targets, disconnection and automatic reconnection.
+PASS: 1606 checks; 50 native renders. Hardware/Options+ UI still requires a real device.
