@@ -19,6 +19,10 @@ var host = typeof(PluginManager).Assembly;
 const BindingFlags members = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 object Call(object x, string name, params object[] values) => x.GetType().GetMethod(name, members)!.Invoke(x, values);
 string Hash(byte[] data) => Convert.ToHexString(SHA256.HashData(data));
+string PixelHash(byte[] data) {
+    using var bitmap=SKBitmap.Decode(data);
+    return $"{bitmap.Width}x{bitmap.Height}:"+Hash(bitmap.Bytes);
+}
 var checks = 0;
 void Check(bool pass, string message) { if (!pass) throw new Exception(message); Interlocked.Increment(ref checks); }
 var expectedHostVersion = Environment.GetEnvironmentVariable("MELD_EXPECTED_HOST_VERSION");
@@ -68,6 +72,13 @@ foreach (var command in commands) {
 }
 var scene = new ShowSceneCommand();
 var camera = (PluginAction)Activator.CreateInstance(typeof(MeldMxKeypadPlugin).Assembly.GetType("Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand")!);
+// Use native profile serialization under an isolated Applications directory.
+var applicationsDirectory=Path.Combine(output,"Applications");
+var cameraProfileFile=Path.Combine(applicationsDirectory,"Loupedeck70","System","Profiles","CameraCheck","ProfileInfo.json");
+Directory.CreateDirectory(Path.GetDirectoryName(cameraProfileFile)!);
+var profileBridge=camera.GetType().GetField("_profiles",members);
+if(profileBridge!=null) profileBridge.SetValue(camera,Activator.CreateInstance(profileBridge.FieldType,
+    members,null,new object[]{applicationsDirectory},null));
 typeof(Plugin).GetProperty("NativeApi")!.SetValue(plugin,DispatchProxy.Create<INativeApi,NoOpNativeApi>());
 if (camera is ActionEditorCommand oldCamera) plugin.ActionEditorCommands.AddAction(oldCamera);
 else {
@@ -182,7 +193,7 @@ foreach(var size in new[]{80,116}) {
 }
 Console.WriteLine("PASS: service default-template factory and renderer: transparent larger symbol, top padding, one native scene caption.");
 Check(!camera.IsWidget, "Camera action must remain an executable non-widget action");
-var profile = new ApplicationProfile();
+var profile = new ApplicationProfile { DeviceType = DeviceType.Loupedeck70 };
 // Empty isolated profile directory; no user profiles are opened or changed.
 var profileDirectory=Path.Combine(output,"empty-profile");
 Directory.CreateDirectory(profileDirectory);
@@ -238,26 +249,18 @@ foreach(var selected in new[]{0,1}) {
         File.WriteAllBytes(Path.Combine(output,$"ShowScene-{label}-{(isActive?"active":"inactive")}-{size}.png"),bytes);
     }
 }
-// Reproduce the reported old display through the service's default-template
-// path before asserting the camera uses the microphone's native state path.
-if (camera is not PluginMultistateDynamicCommand nativeCamera) {
-    var oldAction=new ActionString(plugin.Name,camera.Name,null);
-    Check(manager.TryCreatePluginActionIconTemplate(oldAction,null,PluginImageSize.None,out var oldTemplate),
-        "Old camera template could not be reproduced");
-    using var oldImage=(BitmapImage)render.Invoke(null,new object[]{manager,oldAction.ToString(),null,oldTemplate,null,
-        new BitmapImageSize(116,116),BitmapRotation.None,ActionImageBuilderFlags.None,BitmapImageFormat.Png});
-    File.WriteAllBytes(Path.Combine(output,"camera-regression-small-icon-caption.png"),oldImage.ToArray());
-    throw new Exception("REGRESSION: camera uses the static action-editor display, not the microphone's native multistate display");
-}
-Check(!camera.HasActionEditor && camera.IsProfileAction && !camera.HasParameter &&
-    camera.ProfileActionType=="list;Camera / capture layer", "Camera must expose ONE native list action, not separate layer actions");
-Check(camera.GetType().BaseType==typeof(PluginMultistateDynamicCommand), "Camera must share microphone's native state API");
 mock.CurrentScene=0;mock.CameraName="OBSBOT Meet 2 StreamCamera";mock.GroupedCamera=true;
 mock.ExtraItems["desk-camera"]=new{type="layer",name="Desk Camera",index=3,parent="scene-0",visible=false};
 await mock.PublishAsync();
 PluginActionParameter[] Choices() {
-    Check(nativeCamera.TryGetParameters(out var choices),"Native camera picker request failed");
-    return choices;
+    if (camera is PluginMultistateDynamicCommand legacy) {
+        Check(legacy.TryGetParameters(out var choices),"Legacy camera picker request failed");
+        return choices;
+    }
+    var editor = ((ActionEditorCommand)camera).ActionEditor;
+    var state = new ActionEditorState(new[]{new ActionEditorControlState{Name="Layer",Value=""}});
+    var result = (ActionEditorListboxItemsRequestedEventArgs)Call(editor,"InvokeListboxItemsRequestedEvent",state,"Layer");
+    return result.Items.Select(x=>new PluginActionParameter(camera,x.Name,x.DisplayName,x.Description,"Scenes")).ToArray();
 }
 await Until(()=>Choices().Any(x=>x.DisplayName==mock.CameraName),"Fresh picker did not list the capture layer");
 Check(Choices().Any(x=>x.DisplayName=="Desk Camera"),"Hidden camera missing from picker");
@@ -270,100 +273,254 @@ string State(string action) {
     manager.TryGetPluginActionCurrentStateName(new ActionString(action),null,out var state);
     return state;
 }
-// Parameter identity survives persistence in the native action representation.
-var saved=new ApplicationAction(plugin.Name,camera,Choices().Single(x=>x.Value==liveKey));
-var restored=System.Text.Json.JsonSerializer.Deserialize<ApplicationAction>(
-    System.Text.Json.JsonSerializer.Serialize(saved));
-Check(new ActionString(restored.Name).ActionParameter==liveKey,"Saved action lost the chosen layer");
-var catalogAction=new ApplicationAction(plugin.Name,camera);
-Check(catalogAction.ProfileActionType=="list;Camera / capture layer","Catalog action lost its single-picker metadata");
-await Until(()=>State(liveAction)=="active" && State(deskAction)=="inactive",
-    "Initial native states must match each layer before an image callback or press");
+// A list profile action is persisted under a generated alias, not the picker
+// value. Exercise that native model: a direct ApplicationAction is insufficient.
+if (Environment.GetEnvironmentVariable("MELD_REPRO_LEGACY_CAMERA") == "1") {
+    var assigned = ApplicationAction.CreateLegacyProfileAction(plugin.Name, camera, liveKey,
+        "Toggle Camera", null, "Scenes", null);
+    profile.ProfileCommands.Add(assigned);
+    string AssignedState() {
+        manager.TryGetPluginActionCurrentStateName(new ActionString(assigned.Name), profile, out var value);
+        return value;
+    }
+    byte[] AssignedImage() {
+        using var image=ApplicationProfileImages.CreateActionImage(service,profile,null,assigned.Name,
+            (PluginImageSize)116,BitmapRotation.None,ActionImageBuilderFlags.None);
+        return image.ToArray();
+    }
+    var before=AssignedImage();
+    File.WriteAllBytes(Path.Combine(output,"legacy-camera-before.png"),before);
+    Console.WriteLine($"Saved camera: {assigned.Name}; selected layer: {assigned.LegacyProfileActionParameter}");
+    Console.WriteLine($"BEFORE: raw layer state={State(liveAction)}, saved-button state={AssignedState()}");
+    // ActionExecutor resolves LegacyProfileActionParameter before queuing the
+    // press. Use that exact stored value, then inspect the saved button again.
+    manager.ExecuteAction(new ActionString(plugin.Name,camera.Name,assigned.LegacyProfileActionParameter),null,1);
+    await Until(()=>!mock.CameraVisible && State(liveAction)=="inactive","Camera toggle failed during alias reproduction");
+    var after=AssignedImage();
+    File.WriteAllBytes(Path.Combine(output,"legacy-camera-after.png"),after);
+    Console.WriteLine($"AFTER: raw layer state={State(liveAction)}, saved-button state={AssignedState()}, image changed={Hash(before)!=Hash(after)}");
+    Check(AssignedState()=="unknown" && Hash(before)==Hash(after),"Expected 0.4.14 saved-button regression was not reproduced");
+    Console.WriteLine("REPRODUCED: native list-profile alias stays unknown and its image is unchanged although the layer toggles.");
+    commandQueue.Stop(); plugin.Unload(); Call(camera,"OnUnload");
+    return;
+}
+if (Environment.GetEnvironmentVariable("MELD_REPRO_EDITOR_CAMERA") == "1") {
+    Check(camera is MultistateActionEditorCommand,"Expected the 0.4.15 editor camera");
+    var editorParameters=new ActionEditorActionParameters(new Dictionary<string,string>{{"Layer",liveKey}});
+    var editorAddress=new ActionString(plugin.Name,camera.Name,null).ToString();
+    var assigned=new ApplicationProfileCommand(camera,editorAddress,null,null,null,null,editorParameters);
+    profile.ProfileActions.Add(assigned);
+    string EditorState() {
+        manager.TryGetPluginActionCurrentStateName(new ActionString(assigned.Name),profile,out var value); return value;
+    }
+    byte[] EditorSubscriptionImage() {
+        using var image=(BitmapImage)render.Invoke(null,new object[]{manager,editorAddress,editorParameters.Parameters,
+            null,null,new BitmapImageSize(116,116),BitmapRotation.None,ActionImageBuilderFlags.None,BitmapImageFormat.Png});
+        return image.ToArray();
+    }
+    await Until(()=>EditorState()=="active","0.4.15 profile state was not active");
+    var before=EditorSubscriptionImage();
+    manager.ExecuteAction(new ActionString(editorAddress),editorParameters,1);
+    await Until(()=>!mock.CameraVisible && EditorState()=="inactive","0.4.15 toggle/profile-state reproduction failed");
+    var after=EditorSubscriptionImage();
+    Check(PixelHash(before)==PixelHash(after),"Expected 0.4.15 standalone renderer failure was not reproduced");
+    File.WriteAllBytes(Path.Combine(output,"editor-camera-before.png"),before);
+    File.WriteAllBytes(Path.Combine(output,"editor-camera-after.png"),after);
+    Console.WriteLine("REPRODUCED: 0.4.15 saved profile state changes active -> inactive, but the native standalone renderer ignores the selected editor parameters and its image is unchanged.");
+    commandQueue.Stop();plugin.Unload();Call(scene,"OnUnload");Call(camera,"OnUnload"); return;
+}
+Check(camera is PluginMultistateDynamicCommand && !camera.HasActionEditor && camera.IsProfileAction && !camera.HasParameter &&
+    camera.ProfileActionType=="list;Camera / capture layer",
+    "Camera must use the microphone's native multistate path with one list picker");
+var templateAction=new ActionString(plugin.Name,camera.Name,null).ToString();
+void PersistProfile() => File.WriteAllText(cameraProfileFile,JsonHelpers.SerializeAnyObject(profile));
+ApplicationAction SaveCamera(string key) {
+    var created=ApplicationAction.CreateLegacyProfileAction(plugin.Name,camera,key,"Toggle Camera",null,"Scenes",null);
+    var restored=System.Text.Json.JsonSerializer.Deserialize<ApplicationAction>(
+        System.Text.Json.JsonSerializer.Serialize(created));
+    Check(restored.LegacyProfileActionParameter==key && new ActionString(restored.Name).ActionParameter!=key,
+        "Must test a saved alias, not a direct layer key");
+    profile.ProfileCommands.Add(restored); PersistProfile(); return restored;
+}
+var live=SaveCamera(liveKey); var desk=SaveCamera(deskKey); var missing=SaveCamera("missing");
+// Compare the configuration handler's editable defaults with the working mic.
+// The live button/subscription renderer is checked independently below.
+var configurationHandler=(ConfigurationWindowMessageHandler)RuntimeHelpers.GetUninitializedObject(typeof(ConfigurationWindowMessageHandler));
+for(var type=configurationHandler.GetType();type!=null;type=type.BaseType)
+    foreach(var field in type.GetFields(members | BindingFlags.DeclaredOnly))
+        if(field.FieldType==typeof(LoupedeckService)) field.SetValue(configurationHandler,service);
+ActionIcon ConfiguredIcon(string action) {
+    var arguments=new object[]{profile,action,(PluginImageSize)116,null};
+    Check((bool)typeof(ConfigurationWindowMessageHandler).GetMethod("TryGetActionIcon",members)!
+        .Invoke(configurationHandler,arguments),"Configuration handler returned no saved-camera icon");
+    return (ActionIcon)arguments[3];
+}
+var configuredIcon=ConfiguredIcon(live.Name);
+using(var configuredImage=ActionIconBuilder.CreateImage(116,116,configuredIcon,ActionImageBuilderFlags.None))
+    File.WriteAllBytes(Path.Combine(output,"Camera-configuration-handler.png"),configuredImage.ToArray());
+// The editable default is not the live button renderer: even the working
+// microphone gets a caption here. Check the native multistate route, then
+// actual subscription and saved-profile pixels instead of this editor preview.
+var micDefault=ConfiguredIcon(new ActionString(plugin.Name,commands[2].Name,null).ToString());
+Check(micDefault.Items.OfType<ActionIconTextItem>().Any(x=>x.IsVisible && !String.IsNullOrEmpty(x.Text)),
+    "Expected native editor default for the working microphone");
+var multiIcons=new object[]{profile,live.Name,(PluginImageSize)116,false,null};
+Check((bool)typeof(ConfigurationWindowMessageHandler).GetMethod("TryGetMultiStateActionIcons",members)!
+    .Invoke(configurationHandler,multiIcons),"Camera must expose the native multi-icon route used by the microphone");
+Check(((Dictionary<string,ActionIcon>)multiIcons[4]).Count==3,"Camera state metadata missing");
+string SavedState(ApplicationAction assigned) {
+    manager.TryGetPluginActionCurrentStateName(new ActionString(assigned.Name),profile,out var state); return state;
+}
+BitmapImage ProfileImage(ApplicationAction assigned,int size=116) =>
+    ApplicationProfileImages.CreateActionImage(service,profile,null,assigned.Name,
+        (PluginImageSize)size,BitmapRotation.None,ActionImageBuilderFlags.None);
+byte[] SavedImage(ApplicationAction assigned,int size=116) {
+    using var image=ProfileImage(assigned,size);
+    Check(image!=null,"Saved camera image missing"); return image.ToArray();
+}
+void Press(ApplicationAction assigned) => manager.ExecuteAction(new ActionString(assigned.Name),null,1);
+await Until(()=>SavedState(live)=="active" && SavedState(desk)=="inactive","Initial saved states must match selected layers");
+Console.WriteLine($"Saved camera: {live.Name}; selected layer: {live.LegacyProfileActionParameter}");
+Console.WriteLine($"BEFORE: saved-button state={SavedState(live)}");
+// Use the unmodified native subscription renderer with actual saved aliases.
+// Do not substitute the saved-profile renderer for this path.
 using var subscription=new NativeImageSubscription(manager,plugin);
-subscription.Subscribe(1,liveAction);
-subscription.Subscribe(2,deskAction);
-var shown=Render(liveAction);
-var hidden=Render(deskAction);
-var neutral=Render(Address(null));
+subscription.Subscribe(1,live.Name); subscription.Subscribe(2,desk.Name);
+var shown=SavedImage(live); var hidden=SavedImage(desk); var neutral=SavedImage(missing);
 Check(Hash(shown)!=Hash(hidden) && Hash(shown)!=Hash(neutral),"Native states returned identical camera graphics");
 foreach(var size in new[]{50,80,116}) foreach(var (action,state) in
-    new[]{(liveAction,"active"),(deskAction,"inactive")}) {
-    var bytes=Render(action,size);
+    new[]{(live,"active"),(desk,"inactive"),(missing,"unknown")}) {
+    var bytes=SavedImage(action,size);
     Check(ActionIcon.TryReadFromFile(Path.Combine(root,"metadata/DefaultIconTemplate.ict"),out var iconLayout) &&
         !iconLayout.Items.OfType<ActionIconTextItem>().Any(x=>x.IsVisible),"Camera template must be icon-only");
     iconLayout.SetImage(File.ReadAllBytes(Path.Combine(root,"actionicons",
         $"Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand______{state}.png")));
-    using var expected=ActionIconBuilder.CreateImage(size,size,iconLayout,ActionImageBuilderFlags.None);
-    Check(Hash(bytes)==Hash(expected.ToArray()),"Standalone camera display contains a caption or has the wrong size");
-    Check(Hash(bytes)==Hash(Render(action,size,"Toggle Camera")),"Host text customization leaked onto the camera");
+    using var expectedLayout=ActionIconBuilder.CreateImage((PluginImageSize)size,iconLayout,ActionImageBuilderFlags.None);
+    // Compare the same native pixel format after laying out the full-size asset.
+    using var expected=ActionImageBuilder.GetBitmapImage(expectedLayout,action.Name,null,(PluginImageSize)size,
+        BitmapRotation.None,BitmapColor.White,BitmapColor.Black,ActionImageBuilderFlags.None).ToImage();
     File.WriteAllBytes(Path.Combine(output,$"Camera-native-{state}-{size}.png"),bytes);
+    File.WriteAllBytes(Path.Combine(output,$"Camera-expected-{state}-{size}.png"),expected.ToArray());
+    Check(PixelHash(bytes)==PixelHash(expected.ToArray()),"Saved camera display contains a caption or has the wrong size");
+    Check(PixelHash(Render(action.Name,size))==PixelHash(expectedLayout.ToArray()),
+        "Standalone Options+ renderer lost the saved camera selection or layout");
+    var savedCaption=action.DisplayName;
+    action.DisplayName="THIS MUST NEVER APPEAR";
+    Check(PixelHash(bytes)==PixelHash(SavedImage(action,size)),"Saved profile caption leaked onto camera");
+    action.DisplayName=savedCaption;
+    Check(PixelHash(expectedLayout.ToArray())==PixelHash(Render(new ActionString(plugin.Name,camera.Name,null,state).ToString(),size,"Toggle Camera")),
+        "Explicit-state standalone preview changed layout");
 }
 foreach(var state in new[]{"unknown","inactive","active"}) {
-    Check(nativeCamera.TryGetCommandImage(liveKey,state,PluginImageSize.None,out var image),"State preview missing");
+    Check(((PluginMultistateDynamicCommand)camera).TryGetCommandImage(new ActionString(live.Name).ActionParameter,state,PluginImageSize.None,out var image),"State preview missing");
     using(image) Check(Hash(image.ToArray())==Hash(File.ReadAllBytes(Path.Combine(root,"actionicons",
         $"Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand______{state}.png"))),"State preview ignores explicit state");
 }
-bool Frame(int id,byte[] expected)=>subscription.Frames.Any(x=>x.Id==id && x.Image!=null && Hash(x.Image)==Hash(expected));
+var shownFrame=Render(live.Name); var hiddenFrame=Render(desk.Name);
+bool Frame(int id,byte[] expected)=>subscription.Frames.Any(x=>x.Id==id && x.Image!=null &&
+    PixelHash(x.Image)==PixelHash(ReferenceEquals(expected,shown)?shownFrame:ReferenceEquals(expected,hidden)?hiddenFrame:expected));
 await Until(()=>Frame(1,shown) && Frame(2,hidden),"Native subscription did not render independently selected camera states");
+subscription.Frames.Clear();
 var callsBefore=mock.Calls.Count;
 var snapshotsBefore=mock.SnapshotRequests;
 mock.SnapshotResponseGate=new(TaskCreationOptions.RunContinuationsAsynchronously);
 mock.PublishAfterCommand=false;
-manager.ExecuteAction(new ActionString(liveAction),null,1);
+Press(live);
 await Until(()=>mock.Calls.Count>callsBefore && !mock.CameraVisible,"Native command queue did not toggle the camera");
 await Until(()=>mock.SnapshotRequests>snapshotsBefore,"Press did not poll visibility");
-Check(State(liveAction)=="active" && Hash(Render(liveAction))==Hash(shown),"Icon guessed visibility before Meld replied");
+Console.WriteLine($"Awaiting Meld: state={SavedState(live)}, pixels unchanged={PixelHash(SavedImage(live))==PixelHash(shown)}");
+Check(SavedState(live)=="active" && PixelHash(SavedImage(live))==PixelHash(shown),"Icon guessed visibility before Meld replied");
 mock.SnapshotResponseGate.TrySetResult();
-await Until(()=>State(liveAction)=="inactive" && Frame(1,hidden),"Polled state did not update the native image subscription");
+await Until(()=>SavedState(live)=="inactive" && Frame(1,hidden),"Polled state did not update the native image subscription");
 Check(mock.Calls.Last()=="toggleLayer:[\"scene-0\",\"cam\"]","Press used incorrect native IDs");
-Check(State(deskAction)=="inactive","Press changed another camera's icon");
+Check(SavedState(desk)=="inactive","Press changed another camera's icon");
+Console.WriteLine($"AFTER: saved-button state={SavedState(live)}, image changed={Hash(shown)!=Hash(SavedImage(live))}");
 mock.SnapshotResponseGate=null;
-manager.ExecuteAction(new ActionString(liveAction),null,1);
-await Until(()=>State(liveAction)=="active" && mock.CameraVisible,"Second queued press did not restore the camera");
+subscription.Frames.Clear();
+Press(live);
+await Until(()=>SavedState(live)=="active" && mock.CameraVisible && Frame(1,shown),"Second queued press did not restore the camera");
 mock.PublishAfterCommand=true;
 subscription.Frames.Clear();
 mock.CameraVisible=false;await mock.PublishAsync();
-await Until(()=>State(liveAction)=="inactive" && Frame(1,hidden),"Direct Meld hide did not update native state and render");
+await Until(()=>SavedState(live)=="inactive" && Frame(1,hidden),"Direct Meld hide did not update native state and render");
+subscription.Frames.Clear();
 mock.CameraVisible=true;await mock.PublishAsync();
-await Until(()=>State(liveAction)=="active" && Frame(1,shown),"Direct Meld show did not update native state and render");
-Check(State(deskAction)=="inactive","Direct changes leaked to another camera");
-Console.WriteLine("PASS: the microphone-style native renderer and subscription change camera icons after queued presses and direct Meld updates; no captions.");
+await Until(()=>SavedState(live)=="active" && Frame(1,shown),"Direct Meld show did not update native state and render");
+Check(SavedState(desk)=="inactive","Direct changes leaked to another camera");
+Console.WriteLine("PASS: saved profile rendering and native invalidations change camera icons after queued presses and direct Meld updates; no captions.");
 mock.IgnoreCameraToggle=true;mock.PublishAfterCommand=false;
 snapshotsBefore=mock.SnapshotRequests;
-manager.ExecuteAction(new ActionString(liveAction),null,1);
+Press(live);
 await Task.Delay(1800);
 var snapshotsAfter=mock.SnapshotRequests;
 Check(snapshotsAfter>snapshotsBefore && snapshotsAfter-snapshotsBefore<=10,"Camera polling must be bounded");
 await Task.Delay(300);
-Check(mock.SnapshotRequests==snapshotsAfter && State(liveAction)=="active","No-change reply guessed a state or kept polling");
+Check(mock.SnapshotRequests==snapshotsAfter && SavedState(live)=="active","No-change reply guessed a state or kept polling");
 mock.IgnoreCameraToggle=false;mock.PublishAfterCommand=true;
 mock.ExtraItems["cam"]=new{type="layer",name=mock.CameraName,index=4,parent="scene-0",visible=true};
 mock.CameraScene=mock.CurrentScene=1;mock.CameraId="next-scene-camera";mock.CameraIndex=7;mock.CameraVisible=false;
 await mock.PublishAsync();
-await Until(()=>State(liveAction)=="inactive" && State(deskAction)=="unknown","Saved selection did not follow the current scene");
+await Until(()=>SavedState(live)=="inactive" && SavedState(desk)=="unknown","Saved selection did not follow the current scene");
 Check(Choices().Single(x=>x.DisplayName==mock.CameraName).Value.EndsWith(":7"),"Picker retained an old-scene layer");
-manager.ExecuteAction(new ActionString(liveAction),null,1);
-await Until(()=>State(liveAction)=="active","Saved selection failed in the next scene");
+Press(live);
+await Until(()=>SavedState(live)=="active","Saved selection failed in the next scene");
 Check(mock.Calls.Last()=="toggleLayer:[\"scene-1\",\"next-scene-camera\"]","Scene change used stale command IDs");
 mock.CurrentScene=2;await mock.PublishAsync();
-await Until(()=>State(liveAction)=="unknown","Absent layer should have neutral state");
+await Until(()=>SavedState(live)=="unknown","Absent layer should have neutral state");
 callsBefore=mock.Calls.Count;
-manager.ExecuteAction(new ActionString(liveAction),null,1);
+Press(live);
 await Task.Delay(150);
 Check(mock.Calls.Count==callsBefore,"Absent camera sent a toggle");
 await mock.DisconnectAsync();
-await Until(()=>State(liveAction)=="unknown" && Hash(Render(liveAction))==Hash(neutral),"Disconnect retained a live icon");
+await Until(()=>SavedState(live)=="unknown" && PixelHash(SavedImage(live))==PixelHash(neutral),"Disconnect retained a live icon");
 mock.CameraScene=mock.CurrentScene=0;mock.CameraVisible=true;mock.CameraId="cam";mock.CameraIndex=4;
 mock.ExtraItems.Remove("cam");
 await Until(()=>mock.Connections>=2,"Camera did not reconnect");
 await mock.PublishAsync();
-await Until(()=>State(liveAction)=="active" && State(deskAction)=="inactive","Reconnect did not restore independent camera states");
+await Until(()=>SavedState(live)=="active" && SavedState(desk)=="inactive","Reconnect did not restore independent camera states");
+// Editing the selection must refresh the saved alias without a press or a
+// Meld visibility event. This also covers atomic saves, bad partial JSON,
+// duplicate profiles and deletion; all files are isolated test fixtures.
+subscription.Frames.Clear();
+live.LegacyProfileActionParameter=deskKey; PersistProfile();
+await Until(()=>SavedState(live)=="inactive" && Frame(1,hidden),"Edited picker selection kept the old camera state");
+live.LegacyProfileActionParameter=liveKey;
+var replacement=cameraProfileFile+".tmp";
+File.WriteAllText(replacement,JsonHelpers.SerializeAnyObject(profile));
+File.Move(replacement,cameraProfileFile,true);
+await Until(()=>SavedState(live)=="active","Atomic profile save was not picked up");
+var profileHash=Hash(File.ReadAllBytes(cameraProfileFile));
+Call(camera,"OnUnload"); Call(camera,"OnLoad");
+await Until(()=>SavedState(live)=="active","Saved aliases were not restored on plugin reload");
+Check(Hash(File.ReadAllBytes(cameraProfileFile))==profileHash,"Plugin changed a user profile");
+File.WriteAllText(cameraProfileFile,"{");
+await Until(()=>SavedState(live)=="unknown","Partial profile save retained stale selection");
+File.WriteAllText(cameraProfileFile,"[]");
+await Task.Delay(650);
+Check(SavedState(live)=="unknown","Invalid profile root must be unavailable");
+PersistProfile();
+await Until(()=>SavedState(live)=="active","Completed profile save did not recover");
+var duplicate=Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(cameraProfileFile)!)!,"ConflictingCopy","ProfileInfo.json");
+Directory.CreateDirectory(Path.GetDirectoryName(duplicate)!);
+var conflicting=System.Text.Json.JsonSerializer.Deserialize<ApplicationAction>(System.Text.Json.JsonSerializer.Serialize(live))!;
+conflicting.LegacyProfileActionParameter=deskKey;
+var copiedProfile=new ApplicationProfile {DeviceType=DeviceType.Loupedeck70};
+copiedProfile.ProfileCommands.Add(conflicting);
+File.WriteAllText(duplicate,JsonHelpers.SerializeAnyObject(copiedProfile));
+await Until(()=>SavedState(live)=="unknown","Conflicting saved aliases must not choose an arbitrary camera");
+File.Delete(duplicate);
+await Until(()=>SavedState(live)=="active","Removing a conflicting copy did not recover state");
+File.Delete(cameraProfileFile);
+await Until(()=>SavedState(live)=="unknown","Deleted profile kept stale alias state");
+PersistProfile();
+await Until(()=>SavedState(live)=="active" && SavedState(desk)=="inactive","Recreated profile did not restore independent state");
+Console.WriteLine("PASS: saved selection edits, plugin reload, atomic/partial saves, conflicting copies and deletion; profile bytes unchanged by plugin.");
 Check(subscription.Errors.IsEmpty,"Native image subscription failed");
 commandQueue.Stop();
 plugin.Unload();
 Call(scene,"OnUnload");Call(camera,"OnUnload");
 foreach(var command in commands.OfType<PluginMultistateDynamicCommand>()) Call(command,"OnUnload");
-Console.WriteLine("PASS: one populated list picker, independent camera selections, scene changes, bounded polling and reconnection.");
+Console.WriteLine("PASS: one populated picker and saved parameter persistence, independent camera selections, scene changes, bounded polling and reconnection.");
 Console.WriteLine($"PASS: {checks} native host checks against {host.GetName().Version}.");
 Console.WriteLine("Actual Options+ frontend, real Meld and physical keypad: NOT TESTED.");
 

@@ -1,0 +1,8 @@
+Before fix: 0.4.9 with a fresh empty editor state and a valid current scene. Expected nonzero exit; the status matches the reported screenshot.
+
+PASS: all image callbacks including unspecified size, native packaged state lookup, icon-only templates, scene glyph and caption.
+Unhandled exception. System.Exception: REGRESSION: fresh camera editor with empty values did not list the current scene's camera: No current live scene — choose another scene
+   at Program.<>c__DisplayClass0_0.<<Main>$>g__Check|0(Boolean condition, String message) in /workspace/scratch/bbb1c98afae2/MeldCameraPickerPrototype/MeldMxKeypadPlugin/action-check/Program.cs:line 14
+   at Program.<Main>$(String[] args) in /workspace/scratch/bbb1c98afae2/MeldCameraPickerPrototype/MeldMxKeypadPlugin/action-check/Program.cs:line 214
+   at Program.<Main>$(String[] args) in /workspace/scratch/bbb1c98afae2/MeldCameraPickerPrototype/MeldMxKeypadPlugin/action-check/Program.cs:line 433
+   at Program.<Main>(String[] args)

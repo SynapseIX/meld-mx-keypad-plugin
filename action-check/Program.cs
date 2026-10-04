@@ -45,6 +45,9 @@ var camera = new ToggleCameraCommand();
 Call(plugin.DynamicCommands, "AddAction", camera);
 Call(plugin, "AddAction", camera, false);
 const BindingFlags members = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+var profileBridge=camera.GetType().GetField("_profiles",members)!;
+profileBridge.SetValue(camera,Activator.CreateInstance(profileBridge.FieldType,members,null,
+    new object[]{Path.Combine(output,"Applications")},null));
 typeof(Plugin).GetProperty("NativeApi")!.SetValue(plugin, DispatchProxy.Create<INativeApi, NoOpNativeApi>());
 var callbackType = typeof(Plugin).GetNestedTypes(BindingFlags.NonPublic).Single(t =>
     t.GetInterfaces().Any(i => i.GetMethods().Any(m => m.Name == "ListboxItemsChanged")));

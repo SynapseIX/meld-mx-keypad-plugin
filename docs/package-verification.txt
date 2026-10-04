@@ -1,0 +1,10 @@
+Verifying plugin package '/workspace/scratch/bbb1c98afae2/Meld-0.4.16/MeldMxKeypad-0.4.16.lplug4'
+Unpacking plugin...
+OK
+Verifying plugin package...
+OK
+Operation succeeded in 0.2 seconds.
+
+Plugin DLL SHA256: 0b71e29ecccd18abea5de2b19aec06a9a6b32dc5ff86194259cc706f232a9e2f
+Installer SHA256: f40d38bdd2e46369da2ec2498b5d91012b20f0135150f8190654673147613bd9
+Verified: packaged DLL equals SDK-tested DLL; installer version 0.4.16; no stale per-action templates or bundled proprietary SDK assemblies.
