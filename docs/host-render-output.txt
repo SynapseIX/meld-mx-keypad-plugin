@@ -1,4 +1,3 @@
-/workspace/scratch/bbb1c98afae2/MeldCameraPickerPrototype/MeldMxKeypadPlugin/host-render-check/host-render-check.csproj : warning NU1900: Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.
 Host assembly: LoupedeckService 6.4.2.3414 SHA256=B90E3EE48527425A5EF53A7CA4FFBDDBF3135DF4A91C4A437E5A9A8D9C8C1AC1
 Host assembly: PluginApi 6.4.2.3414 SHA256=D0C2EF168435423DB870103C2DDA080CB625009BB502A0AFF47115F5A5D6D90A
 Host assembly: LoupedeckShared 6.4.2.3414 SHA256=22A2AC09C87B1826FFCED215FCD2ACC9F8C1F7B376564F7DAA54EFB6A35C93F7
@@ -18,7 +17,7 @@ NEW ToggleVirtualCameraCommand/active: 2442 colored pixels
 NEW SaveClipCommand/default: 1566 colored pixels
 NEW ScreenshotCommand/default: 1463 colored pixels
 PASS: service default-template factory and renderer: transparent larger symbol, top padding, one native scene caption.
-Saved camera: $MeldMxKeypad___Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand___0B94ACD6D8CA4D21BAA15258CB72F600-D45B2D6D36B648C688C477DDE6FFB803; selected layer: T0JTQk9UIE1lZXQgMiBTdHJlYW1DYW1lcmE=:4
+Saved camera: $MeldStudioControls___Loupedeck.MeldStudioControlsPlugin.ToggleCameraCommand___0B94ACD6D8CA4D21BAA15258CB72F600-7DC9F79FB8034AE1A27B82EBC911563B; selected layer: T0JTQk9UIE1lZXQgMiBTdHJlYW1DYW1lcmE=:4
 BEFORE: saved-button state=active
 Awaiting Meld: state=active, pixels unchanged=True
 AFTER: saved-button state=inactive, image changed=True

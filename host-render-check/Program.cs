@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Loupedeck;
 using Loupedeck.Service;
-using Loupedeck.MeldMxKeypadPlugin;
+using Loupedeck.MeldStudioControlsPlugin;
 using SkiaSharp;
 
 // Headless integration checks for the selected Logi Plugin Service assemblies.
@@ -32,7 +32,7 @@ foreach (var assembly in new[] { host, typeof(Plugin).Assembly, Assembly.Load("L
     if (!String.IsNullOrWhiteSpace(expectedHostVersion))
         Check(version == expectedHostVersion, $"Wrong host assembly: expected {expectedHostVersion}, loaded {assembly.GetName()}");
 }
-var plugin = new MeldMxKeypadPlugin();
+var plugin = new MeldStudioControlsPlugin();
 // Plugin.Initialize normally owns this queue. The isolated host harness
 // supplies that part of initialization and runs the real dispatcher.
 var processQueue = typeof(Plugin).GetMethod("ProcessCommandQueue", members)!;
@@ -41,8 +41,8 @@ using var commandQueue = new PluginCommandQueue(plugin.Name,
 typeof(Plugin).GetFields(members).Single(f => f.FieldType == typeof(PluginCommandQueue))
     .SetValue(plugin, commandQueue);
 typeof(Plugin).GetProperty("Localization")!.SetValue(plugin,new PluginLocalizationEngine(plugin.Name,new TestLocalization()));
-Check(Hash(File.ReadAllBytes(Path.Combine(root, "bin/MeldMxKeypadPlugin.dll"))) ==
-    Hash(File.ReadAllBytes(typeof(MeldMxKeypadPlugin).Assembly.Location)), "Tested assembly differs from package");
+Check(Hash(File.ReadAllBytes(Path.Combine(root, "bin/MeldStudioControlsPlugin.dll"))) ==
+    Hash(File.ReadAllBytes(typeof(MeldStudioControlsPlugin).Assembly.Location)), "Tested assembly differs from package");
 var manager = (PluginManager)RuntimeHelpers.GetUninitializedObject(typeof(PluginManager));
 foreach (var field in typeof(PluginManager).GetFields(members)) {
     if (field.FieldType.FullName.Contains("Dictionary") && field.FieldType.GetConstructor(Type.EmptyTypes) != null)
@@ -71,7 +71,7 @@ foreach (var command in commands) {
     if (command is PluginMultistateDynamicCommand) Call(command, "OnLoad");
 }
 var scene = new ShowSceneCommand();
-var camera = (PluginAction)Activator.CreateInstance(typeof(MeldMxKeypadPlugin).Assembly.GetType("Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand")!);
+var camera = (PluginAction)Activator.CreateInstance(typeof(MeldStudioControlsPlugin).Assembly.GetType("Loupedeck.MeldStudioControlsPlugin.ToggleCameraCommand")!);
 // Use native profile serialization under an isolated Applications directory.
 var applicationsDirectory=Path.Combine(output,"Applications");
 var cameraProfileFile=Path.Combine(applicationsDirectory,"Loupedeck70","System","Profiles","CameraCheck","ProfileInfo.json");
@@ -394,7 +394,7 @@ foreach(var size in new[]{50,80,116}) foreach(var (action,state) in
     Check(ActionIcon.TryReadFromFile(Path.Combine(root,"metadata/DefaultIconTemplate.ict"),out var iconLayout) &&
         !iconLayout.Items.OfType<ActionIconTextItem>().Any(x=>x.IsVisible),"Camera template must be icon-only");
     iconLayout.SetImage(File.ReadAllBytes(Path.Combine(root,"actionicons",
-        $"Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand______{state}.png")));
+        $"Loupedeck.MeldStudioControlsPlugin.ToggleCameraCommand______{state}.png")));
     using var expectedLayout=ActionIconBuilder.CreateImage((PluginImageSize)size,iconLayout,ActionImageBuilderFlags.None);
     // Compare the same native pixel format after laying out the full-size asset.
     using var expected=ActionImageBuilder.GetBitmapImage(expectedLayout,action.Name,null,(PluginImageSize)size,
@@ -414,7 +414,7 @@ foreach(var size in new[]{50,80,116}) foreach(var (action,state) in
 foreach(var state in new[]{"unknown","inactive","active"}) {
     Check(((PluginMultistateDynamicCommand)camera).TryGetCommandImage(new ActionString(live.Name).ActionParameter,state,PluginImageSize.None,out var image),"State preview missing");
     using(image) Check(Hash(image.ToArray())==Hash(File.ReadAllBytes(Path.Combine(root,"actionicons",
-        $"Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand______{state}.png"))),"State preview ignores explicit state");
+        $"Loupedeck.MeldStudioControlsPlugin.ToggleCameraCommand______{state}.png"))),"State preview ignores explicit state");
 }
 var shownFrame=Render(live.Name); var hiddenFrame=Render(desk.Name);
 bool Frame(int id,byte[] expected)=>subscription.Frames.Any(x=>x.Id==id && x.Image!=null &&

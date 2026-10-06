@@ -4,8 +4,8 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>0.4.16</Version>
-    <RootNamespace>Loupedeck.MeldMxKeypadPlugin</RootNamespace>
+    <Version>0.4.17</Version>
+    <RootNamespace>Loupedeck.MeldStudioControlsPlugin</RootNamespace>
 
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -22,7 +22,7 @@
     <BaseOutputPath>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\bin\'))</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)$(Configuration)\bin\</OutputPath>
 
-    <PluginShortName>MeldMxKeypad</PluginShortName>
+    <PluginShortName>MeldStudioControls</PluginShortName>
   </PropertyGroup>
 
   <ItemGroup>

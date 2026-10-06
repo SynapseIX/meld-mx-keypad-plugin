@@ -8,7 +8,7 @@
     <AssemblySearchPaths>{HintPathFromItem};{TargetFrameworkDirectory};{RawFileName}</AssemblySearchPaths>
     <DefaultItemExcludes>$(DefaultItemExcludes);bin/**;obj/**</DefaultItemExcludes>
     <HostAssemblyDir Condition="'$(HostAssemblyDir)' == ''">/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/</HostAssemblyDir>
-    <PluginAssemblyPath Condition="'$(PluginAssemblyPath)' == ''">$(MSBuildThisFileDirectory)../bin/Release/bin/MeldMxKeypadPlugin.dll</PluginAssemblyPath>
+    <PluginAssemblyPath Condition="'$(PluginAssemblyPath)' == ''">$(MSBuildThisFileDirectory)../bin/Release/bin/MeldStudioControlsPlugin.dll</PluginAssemblyPath>
     <SkiaSharpAssemblyPath Condition="'$(SkiaSharpAssemblyPath)' == ''">$(HostAssemblyDir)SkiaSharp.dll</SkiaSharpAssemblyPath>
   </PropertyGroup>
   <ItemGroup>
@@ -17,7 +17,7 @@
     <Reference Include="LoupedeckShared"><HintPath>$(HostAssemblyDir)LoupedeckShared.dll</HintPath></Reference>
     <Reference Include="LoupedeckService"><HintPath>$(HostAssemblyDir)LoupedeckService.dll</HintPath></Reference>
     <Reference Include="SkiaSharp"><HintPath>$(SkiaSharpAssemblyPath)</HintPath></Reference>
-    <Reference Include="MeldMxKeypadPlugin"><HintPath>$(PluginAssemblyPath)</HintPath></Reference>
+    <Reference Include="MeldStudioControlsPlugin"><HintPath>$(PluginAssemblyPath)</HintPath></Reference>
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.8"
       Condition="$([MSBuild]::IsOSPlatform('Linux'))" />
   </ItemGroup>

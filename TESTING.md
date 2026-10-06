@@ -1,6 +1,10 @@
-# Camera regression verification — 0.4.16
+# Meld Studio Controls verification — 0.4.17
 
-Updated 2026-10-03. Native host checks use **Logi Plugin Service 6.4.2.3414**. Actual Options+, Meld and the physical keypad are not available in the automated test environment. After the 0.4.16 installer was delivered, the maintainer confirmed that the camera fix works on the physical keypad; their reported setup is **Options+ 2.9.984725 / Service 6.4.2.3414**. This confirmation is separate from the automated results below.
+Updated 2026-10-05. Native host checks use **Logi Plugin Service 6.4.2.3414**. Actual Options+, Meld and the physical keypad are not available in the automated test environment. After the 0.4.16 installer was delivered, the maintainer confirmed that the camera fix works on the physical keypad; their reported setup is **Options+ 2.9.984725 / Service 6.4.2.3414**. This confirmation is separate from the automated results below.
+
+## Rename in 0.4.17
+
+The package ID is now `MeldStudioControls`. Namespace, class and assembly names, action asset names, the camera saved-selection filter, and test references use that identity consistently. Camera command and rendering logic are unchanged from 0.4.16. The maintainer's physical-device confirmation applies to 0.4.16; the renamed package requires a new install and button assignments.
 
 ## Failures reproduced
 
@@ -37,7 +41,7 @@ Capture filtering, case-insensitive scene matching, native `toggleLayer` argumen
 
 | Check | Result |
 | --- | --- |
-| .NET 8 plugin build | Passed |
+| .NET 8 target build (using SDK 10.0.401) | Passed; 0 warnings, 0 errors |
 | Native legacy profile creation and serialization | Uses real generated aliases, not substituted layer keys |
 | Initial state before image callbacks or presses | Matches each saved selection |
 | Native standalone image subscription | Original renderer and invalidation queue; no profile-renderer substitution |
@@ -52,8 +56,9 @@ Capture filtering, case-insensitive scene matching, native `toggleLayer` argumen
 | Saved picker edits, plugin reload, profile replacement/deletion | Updates without a new press or Meld event |
 | Incomplete/invalid JSON and conflicting copied aliases | Neutral state, then recovery after correction |
 | Profile content | Plugin does not modify it |
-| SDK suite | Other actions, picker population, mixed-case schema/names, groups and exclusions |
-| Actual Options+ frontend, real Meld, physical keypad | Camera fix confirmed by maintainer after delivery; not exercised by the automated suite |
+| SDK suite | Passed: 1,610 checks and 50 renders; actions, picker population, mixed-case schema/names, groups and exclusions |
+| Native host suite | Passed: 315 checks against Service 6.4.2.3414 |
+| Actual Options+ frontend, real Meld, physical keypad | 0.4.16 camera fix confirmed by maintainer; renamed 0.4.17 package not yet tested on hardware |
 
 The host suite uses a temporary Applications directory populated by Logitech's native profile serializer. It does not scan real user profiles. Only the final IPC image transport is replaced with a frame collector; image generation and event matching use native host code.
 
@@ -61,7 +66,7 @@ Assertion counts include repeated pixel checks and asynchronous waits, not disti
 
 ## Reproduce
 
-Use the build/test commands in [README.md](README.md). Run suites sequentially with Meld closed because the mock binds local port 13376.
+Use the build/test commands in [README.md](README.md). Run suites sequentially with Meld closed because the mock binds local port 13376. The historical reproduction instructions below require the original 0.4.16 source/harness, which retains the old plugin identity and assembly names.
 
 For the original **0.4.14** installer, unpack it and set `MELD_REPRO_LEGACY_CAMERA=1`, add `-p:PluginAssemblyPath=/path/to/old-package/bin/MeldMxKeypadPlugin.dll`, and pass that package as the first program argument. The diagnostic succeeds only if a successful toggle leaves the saved alias unknown with an unchanged image.
 

@@ -1,12 +1,12 @@
-namespace Loupedeck.MeldMxKeypadPlugin
+namespace Loupedeck.MeldStudioControlsPlugin
 {
     using System;
 
     // This class can be used to connect the Loupedeck plugin to an application.
 
-    public class MeldMxKeypadApplication : ClientApplication
+    public class MeldStudioControlsApplication : ClientApplication
     {
-        public MeldMxKeypadApplication()
+        public MeldStudioControlsApplication()
         {
         }
 
