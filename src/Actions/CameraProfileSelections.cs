@@ -1,4 +1,4 @@
-namespace Loupedeck.MeldMxKeypadPlugin;
+namespace Loupedeck.MeldStudioControlsPlugin;
 
 using System;
 using System.Collections.Generic;
@@ -94,7 +94,7 @@ internal sealed class CameraProfileSelections
                 !command.TryGetProperty("name", out var name) || name.ValueKind != JsonValueKind.String ||
                 !command.TryGetProperty("legacyProfileActionParameter", out var selection) || selection.ValueKind != JsonValueKind.String ||
                 !ActionString.TryGetValidAction(name.GetString(), out var action) ||
-                !String.Equals(action.PluginName, "MeldMxKeypad", StringComparison.OrdinalIgnoreCase) ||
+                !String.Equals(action.PluginName, "MeldStudioControls", StringComparison.OrdinalIgnoreCase) ||
                 !String.Equals(action.ActionName, typeof(ToggleCameraCommand).FullName, StringComparison.OrdinalIgnoreCase) ||
                 String.IsNullOrEmpty(action.ActionParameter)) continue;
             values[action.ActionParameter] = selection.GetString();
