@@ -7,7 +7,7 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Loupedeck.MeldMxKeypadPlugin;
+using Loupedeck.MeldStudioControlsPlugin;
 
 var listener = new HttpListener();
 listener.Prefixes.Add("http://127.0.0.1:13376/");
@@ -72,6 +72,6 @@ Console.WriteLine("Delayed scenes, change notification, streaming status, and ca
 client.Stop();
 listener.Stop();
 
-namespace Loupedeck.MeldMxKeypadPlugin {
+namespace Loupedeck.MeldStudioControlsPlugin {
     internal static class PluginLog { public static void Warning(string message) => Console.Error.WriteLine(message); }
 }

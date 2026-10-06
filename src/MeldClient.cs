@@ -1,4 +1,4 @@
-namespace Loupedeck.MeldMxKeypadPlugin;
+namespace Loupedeck.MeldStudioControlsPlugin;
 
 using System;
 using System.Collections.Concurrent;

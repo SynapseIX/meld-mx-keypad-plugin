@@ -1,10 +1,10 @@
-namespace Loupedeck.MeldMxKeypadPlugin
+namespace Loupedeck.MeldStudioControlsPlugin
 {
     using System;
 
     // This class contains the plugin-level logic of the Loupedeck plugin.
 
-    public class MeldMxKeypadPlugin : Plugin
+    public class MeldStudioControlsPlugin : Plugin
     {
         // Gets a value indicating whether this is an API-only plugin.
         public override Boolean UsesApplicationApiOnly => true;
@@ -13,7 +13,7 @@ namespace Loupedeck.MeldMxKeypadPlugin
         public override Boolean HasNoApplication => true;
 
         // Initializes a new instance of the plugin class.
-        public MeldMxKeypadPlugin()
+        public MeldStudioControlsPlugin()
         {
             // Initialize the plugin log.
             PluginLog.Init(this.Log);

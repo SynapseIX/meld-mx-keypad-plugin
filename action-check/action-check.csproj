@@ -7,7 +7,7 @@
     <PluginApiDir Condition="'$(PluginApiDir)' == '' and $(OS) != 'Windows_NT'">/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/</PluginApiDir>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../src/MeldMxKeypadPlugin.csproj" AdditionalProperties="SkipHostActions=true" />
+    <ProjectReference Include="../src/MeldStudioControlsPlugin.csproj" AdditionalProperties="SkipHostActions=true" />
     <Reference Include="PluginApi"><HintPath>$(PluginApiDir)PluginApi.dll</HintPath></Reference>
     <Reference Include="LoupedeckShared"><HintPath>$(PluginApiDir)LoupedeckShared.dll</HintPath></Reference>
     <Reference Include="SkiaSharp"><HintPath>$(PluginApiDir)SkiaSharp.dll</HintPath></Reference>

@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Security.Cryptography;
 using Loupedeck;
-using Loupedeck.MeldMxKeypadPlugin;
+using Loupedeck.MeldStudioControlsPlugin;
 using Loupedeck.Service;
 using SkiaSharp;
 
@@ -31,10 +31,10 @@ byte[] ImageBytes(BitmapImage image, string label) {
     }
 }
 
-var plugin = new MeldMxKeypadPlugin(); // initializes embedded resource lookup
-var packagedAssembly = Path.Combine(root, "bin", "MeldMxKeypadPlugin.dll");
+var plugin = new MeldStudioControlsPlugin(); // initializes embedded resource lookup
+var packagedAssembly = Path.Combine(root, "bin", "MeldStudioControlsPlugin.dll");
 if (File.Exists(packagedAssembly)) Check(Hash(File.ReadAllBytes(packagedAssembly)) ==
-    Hash(File.ReadAllBytes(typeof(MeldMxKeypadPlugin).Assembly.Location)), "Package contains a different plugin assembly from the one under test");
+    Hash(File.ReadAllBytes(typeof(MeldStudioControlsPlugin).Assembly.Location)), "Package contains a different plugin assembly from the one under test");
 var toggles = new PluginMultistateDynamicCommand[] { new ToggleStreamCommand(), new ToggleRecordingCommand(),
     new ToggleMicrophoneCommand(), new ToggleVirtualCameraCommand() };
 var singles = new PluginDynamicCommand[] { new SaveClipCommand(), new ScreenshotCommand() };
@@ -69,7 +69,7 @@ var captions = new Dictionary<string, string[]> {
 };
 
 byte[] Render(string actionName, string stateName, string caption, byte[] expected, int size, bool showText) {
-    var actionString = new ActionString("MeldMxKeypad", actionName, null, stateName);
+    var actionString = new ActionString("MeldStudioControls", actionName, null, stateName);
     Check(package.TryGetActionIcon(actionString, out var image), $"Packaged icon missing: {actionString}");
     var bytes = ImageBytes(image, actionString.ToString());
     Check(Hash(bytes) == Hash(expected), "Package and callback disagree: " + actionString);
@@ -177,7 +177,7 @@ ActionEditorListboxItemsRequestedEventArgs Picker() => (ActionEditorListboxItems
 string CameraSelection(ActionEditorActionParameters selection = null) => selection == null ? "automatic" :
     selection.TryGetString("layer", out var layer) ? layer : null;
 string CameraAssetHash(string state) => Hash(File.ReadAllBytes(Path.Combine(root, "actionicons",
-    $"Loupedeck.MeldMxKeypadPlugin.ToggleCameraCommand______{state}.png")));
+    $"Loupedeck.MeldStudioControlsPlugin.ToggleCameraCommand______{state}.png")));
 var cameraVisibleHash = CameraAssetHash("active");
 var cameraHiddenHash = CameraAssetHash("inactive");
 var cameraUnknownHash = CameraAssetHash("unknown");

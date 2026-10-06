@@ -18,7 +18,7 @@ toggles = {
     "ToggleCameraCommand": ["camera", "camera-hidden", "camera-visible"],
     "ToggleVirtualCameraCommand": ["virtual-camera", "virtual-camera-start", "virtual-camera-stop"],
 }
-prefix = "Loupedeck.MeldMxKeypadPlugin."
+prefix = "Loupedeck.MeldStudioControlsPlugin."
 for action, icons in toggles.items():
     shutil.copyfile(root / "icons" / f"{icons[0]}.png", destination / f"{prefix}{action}.png")
     for state, icon in zip(["unknown", "inactive", "active"], icons):
