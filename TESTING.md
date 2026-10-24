@@ -1,6 +1,14 @@
-# Meld Studio Controls verification — 0.4.17
+# Meld Studio Controls verification — 0.4.18
 
-Updated 2026-10-05. Native host checks use **Logi Plugin Service 6.4.2.3414**. Actual Options+, Meld and the physical keypad are not available in the automated test environment. After the 0.4.16 installer was delivered, the maintainer confirmed that the camera fix works on the physical keypad; their reported setup is **Options+ 2.9.984725 / Service 6.4.2.3414**. This confirmation is separate from the automated results below.
+Updated 2026-10-23. Native host checks use **Logi Plugin Service 6.4.2.3414**. Actual Options+, Meld and the physical keypad are not available in the automated test environment. After the 0.4.16 installer was delivered, the maintainer confirmed that the camera fix works on the physical keypad; their reported setup is **Options+ 2.9.984725 / Service 6.4.2.3414**. This confirmation is separate from the automated results below.
+
+## Scene color update in 0.4.18
+
+The selected title/background color pair has a calculated contrast ratio of **9.65:1**.
+
+Only the configured Show Scene image palette changes: current scene `#C4E5F5` / title `#17354A`; other scenes remain `#111823` / white. The unconfigured transparent symbol, icon spacing, title sizing, action identity, scene selection, event callbacks, camera logic, and other commands are unchanged. Existing 0.4.17 assignments remain valid.
+
+The existing SDK/native host scene-render assertions now check dark captions on the light background and white captions on inactive buttons. Glyph detection is restricted to purple so the light blue fill is not mistaken for the icon. The native saved-profile renderer covers simulated scene changes and both short/long labels. The separate unconfigured editor renderer still has no selected-scene context; this change does not resolve that pre-existing host limitation.
 
 ## Rename in 0.4.17
 
@@ -45,7 +53,7 @@ Capture filtering, case-insensitive scene matching, native `toggleLayer` argumen
 | Native legacy profile creation and serialization | Uses real generated aliases, not substituted layer keys |
 | Initial state before image callbacks or presses | Matches each saved selection |
 | Native standalone image subscription | Original renderer and invalidation queue; no profile-renderer substitution |
-| Native saved-profile rendering | Compared independently with expected artwork |
+| Native saved-profile rendering | Compared independently with expected artwork; selected baby blue background/dark title, inactive dark background/white title |
 | Camera graphics at 50/80/116 px | Full-size pixels, no captions, distinct visible/hidden/unavailable states |
 | Press twice through native command queue | Correct native layer IDs and state in both directions |
 | Delayed post-press polling reply | Icon retains confirmed state until Meld replies |
@@ -56,9 +64,9 @@ Capture filtering, case-insensitive scene matching, native `toggleLayer` argumen
 | Saved picker edits, plugin reload, profile replacement/deletion | Updates without a new press or Meld event |
 | Incomplete/invalid JSON and conflicting copied aliases | Neutral state, then recovery after correction |
 | Profile content | Plugin does not modify it |
-| SDK suite | Passed: 1,610 checks and 50 renders; actions, picker population, mixed-case schema/names, groups and exclusions |
-| Native host suite | Passed: 315 checks against Service 6.4.2.3414 |
-| Actual Options+ frontend, real Meld, physical keypad | 0.4.16 camera fix confirmed by maintainer; renamed 0.4.17 package not yet tested on hardware |
+| SDK suite | Passed: 1,612 checks and 50 renders; actions, picker population, mixed-case schema/names, groups and exclusions |
+| Native host suite | Passed: 316 checks against Service 6.4.2.3414 |
+| Actual Options+ frontend, real Meld, physical keypad | 0.4.16 camera fix confirmed by maintainer; 0.4.18 scene palette not yet tested on hardware |
 
 The host suite uses a temporary Applications directory populated by Logitech's native profile serializer. It does not scan real user profiles. Only the final IPC image transport is replaced with a frame collector; image generation and event matching use native host code.
 
@@ -76,6 +84,9 @@ Keep `MELD_EXPECTED_HOST_VERSION=6.4.2.3414` for these runs. The suite checks th
 
 ## Evidence
 
+- [Selected scene render](docs/scene-selected-116.png)
+- [Inactive scene render](docs/scene-inactive-116.png)
+- [Selected long scene title](docs/scene-selected-long-80.png)
 - [SDK output](docs/test-output.txt)
 - [Native host output](docs/host-render-output.txt)
 - [0.4.14 alias regression](docs/camera-saved-profile-regression-0414.txt)

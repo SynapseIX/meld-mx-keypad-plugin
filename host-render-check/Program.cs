@@ -224,7 +224,7 @@ async Task Until(Func<bool> condition,string message) {
     throw new Exception(message);
 }
 var inactiveColor = new SKColor(0x11,0x18,0x23);
-var activeColor = new SKColor(0x49,0x30,0x79);
+var activeColor = new SKColor(0xc4,0xe5,0xf5);
 SKColor Background(byte[] bytes) { using var image=SKBitmap.Decode(bytes); return image.GetPixel(0,0); }
 ActionEditorActionParameters Selection(string control,string name,int index) => new(new Dictionary<string,string>{
     {control,Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(name))+":"+index}});
@@ -245,7 +245,9 @@ foreach(var selected in new[]{0,1}) {
         Check(bitmap.Width==size && bitmap.Height==size,"Profile renderer returned wrong dimensions");
         var isActive=label=="short" ? selected==0 : selected==1;
         Check(Background(bytes)==(isActive?activeColor:inactiveColor),"Wrong scene highlight");
-        Check(bitmap.Pixels.Count(p=>p.Red>220 && p.Green>220 && p.Blue>220)>90,"Large scene caption missing");
+        Check(bitmap.Pixels.Where((p,i)=>i/size>size*.54).Count(p=>isActive
+            ? p.Red<80 && p.Green<100 && p.Blue<125
+            : p.Red>220 && p.Green>220 && p.Blue>220)>90,"Contrasting scene caption missing");
         File.WriteAllBytes(Path.Combine(output,$"ShowScene-{label}-{(isActive?"active":"inactive")}-{size}.png"),bytes);
     }
 }

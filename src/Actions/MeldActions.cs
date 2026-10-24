@@ -257,7 +257,8 @@ public sealed class ShowSceneCommand : ActionEditorCommand
         // Supply a complete, fixed-resolution image even for unsized requests.
         // Per-action .ict overrides would freeze this runtime background.
         using var bitmap = new BitmapBuilder(128, 128);
-        bitmap.Clear(selected?.Current == true ? 0xff493079u : 0xff111823u);
+        var isCurrent = selected?.Current == true;
+        bitmap.Clear(isCurrent ? 0xffc4e5f5u : 0xff111823u);
         using var glyph = MeldIcons.Read("scene");
         bitmap.DrawImage(glyph, 31, 10, 66, 66);
         var fontSize = label.Length <= 14 ? 20 : label.Length <= 28 ? 16 : 14;
@@ -266,7 +267,8 @@ public sealed class ShowSceneCommand : ActionEditorCommand
         // caption surface also keeps long labels out of the icon's area.
         using var caption = new BitmapBuilder(116, 50);
         caption.Clear(0x00000000u);
-        caption.DrawText(label, BitmapColor.White, fontSize, fontSize - 2, 3);
+        caption.DrawText(label, isCurrent ? new BitmapColor(0xff17354au) : BitmapColor.White,
+            fontSize, fontSize - 2, 3);
         using var captionImage = caption.ToImage();
         bitmap.DrawImage(captionImage, 6, 68);
         return bitmap.ToImage();
