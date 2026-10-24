@@ -1,10 +1,10 @@
-Verifying plugin package '/workspace/scratch/bbb1c98afae2/MeldStudioControls-0.4.18/MeldStudioControls-0.4.18.lplug4'
+Verifying plugin package '/workspace/scratch/bbb1c98afae2/MeldStudioControls-0.4.19/MeldStudioControls-0.4.19.lplug4'
 Unpacking plugin...
 OK
 Verifying plugin package...
 OK
-Operation succeeded in 0.3 seconds.
+Operation succeeded in 0.5 seconds.
 
-Plugin DLL SHA256: 3bff318aa8d4851f2e168063e96eb7643453e976abaaa39c6782b09819af2178
-Installer SHA256: b3db7bfff389267d72b67a1e91815e564b30c45c6555c33547361b8a6ce3beb5
-Verified: packaged DLL equals SDK-tested and native-host-tested DLLs; plugin ID unchanged (MeldStudioControls), version 0.4.18; no stale per-action templates or bundled proprietary SDK assemblies. All packaged action artwork matches 0.4.17.
+Plugin DLL SHA256: 3771c47a35c5972245ea2379816d636a02c6c01d03e615f821d77bc2f0ff48ea
+Installer SHA256: 43f5eeb087c77425b7f5c9860da7444eac0ea6ea0710df2f5d1d3b5b7e96e06b
+Verified: packaged DLL equals SDK, native camera-host, and native standalone-scene tested DLLs; ID MeldStudioControls, version 0.4.19; no proprietary SDK assemblies. Camera/microphone/client/selection code and original action artwork match 0.4.18. Existing Show Scene handler retained and hidden; new ShowSceneButtonCommand uses native saved aliases.

@@ -17,12 +17,12 @@ NEW ToggleVirtualCameraCommand/active: 2442 colored pixels
 NEW SaveClipCommand/default: 1566 colored pixels
 NEW ScreenshotCommand/default: 1463 colored pixels
 PASS: service default-template factory and renderer: transparent larger symbol, top padding, one native scene caption.
-Saved camera: $MeldStudioControls___Loupedeck.MeldStudioControlsPlugin.ToggleCameraCommand___0B94ACD6D8CA4D21BAA15258CB72F600-077A87C9AA88456D9DD39454969100B2; selected layer: T0JTQk9UIE1lZXQgMiBTdHJlYW1DYW1lcmE=:4
+Saved camera: $MeldStudioControls___Loupedeck.MeldStudioControlsPlugin.ToggleCameraCommand___0B94ACD6D8CA4D21BAA15258CB72F600-7F20368EE6894B5FBC373358BFC4B215; selected layer: T0JTQk9UIE1lZXQgMiBTdHJlYW1DYW1lcmE=:4
 BEFORE: saved-button state=active
 Awaiting Meld: state=active, pixels unchanged=True
 AFTER: saved-button state=inactive, image changed=True
 PASS: saved profile rendering and native invalidations change camera icons after queued presses and direct Meld updates; no captions.
 PASS: saved selection edits, plugin reload, atomic/partial saves, conflicting copies and deletion; profile bytes unchanged by plugin.
 PASS: one populated picker and saved parameter persistence, independent camera selections, scene changes, bounded polling and reconnection.
-PASS: 316 native host checks against 6.4.2.3414.
+PASS: 315 native host checks against 6.4.2.3414.
 Actual Options+ frontend, real Meld and physical keypad: NOT TESTED.

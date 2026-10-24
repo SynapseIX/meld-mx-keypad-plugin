@@ -1,0 +1,8 @@
+Host assembly: LoupedeckService 6.4.2.3414 SHA256=B90E3EE48527425A5EF53A7CA4FFBDDBF3135DF4A91C4A437E5A9A8D9C8C1AC1
+Host assembly: PluginApi 6.4.2.3414 SHA256=D0C2EF168435423DB870103C2DDA080CB625009BB502A0AFF47115F5A5D6D90A
+Host assembly: LoupedeckShared 6.4.2.3414 SHA256=22A2AC09C87B1826FFCED215FCD2ACC9F8C1F7B376564F7DAA54EFB6A35C93F7
+REPRODUCED: original Show Scene saved-profile colors change, but native standalone images ignore distinct Scene parameters and remain unchanged.
+PASS: native queued presses and direct Meld changes update standalone scene subscriptions, titles, duplicate assignments, and previous highlights.
+PASS: scene picker edits, replacement IDs, legacy assignments, unavailable scenes, reconnect and reload; no unrelated control or profile changes.
+PASS: 133 native scene checks against 6.4.2.3414.
+Physical Options+ frontend, real Meld, and keypad: NOT TESTED.

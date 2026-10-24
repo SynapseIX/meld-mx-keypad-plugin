@@ -1,14 +1,22 @@
-# Meld Studio Controls verification — 0.4.18
+# Meld Studio Controls verification — 0.4.19
 
 Updated 2026-10-23. Native host checks use **Logi Plugin Service 6.4.2.3414**. Actual Options+, Meld and the physical keypad are not available in the automated test environment. After the 0.4.16 installer was delivered, the maintainer confirmed that the camera fix works on the physical keypad; their reported setup is **Options+ 2.9.984725 / Service 6.4.2.3414**. This confirmation is separate from the automated results below.
+
+## Device scene rendering fix in 0.4.19
+
+The user reported that **0.4.18 did not change the background on the physical device**. Its native saved-profile render tests passed, but that path was insufficient: the standalone renderer discarded the Action Editor scene parameters, returning the same neutral image for different scenes. A negative control against the original 0.4.18 DLL reproduces this difference.
+
+The new Show Scene action uses `PluginMultistateDynamicCommand` with one native list picker and a dedicated read-only scene alias resolver. Each button's confirmed Meld scene state drives its background and title. The older Action Editor command is hidden, not removed, so existing assignments keep switching scenes. Replace scene assignments once to use the new renderer. Camera/microphone code, native RPC calls, plugin identity, and existing artwork remain unchanged.
+
+The dedicated `scene-render-check` suite tests native serialized saved aliases and the actual standalone image subscription renderer with multiple scene buttons. It does not inject a saved-profile renderer into the subscription. Physical Options+ and the keypad are still unavailable here; 0.4.19 needs hardware confirmation after replacing old scene assignments.
 
 ## Scene color update in 0.4.18
 
 The selected title/background color pair has a calculated contrast ratio of **9.65:1**.
 
-Only the configured Show Scene image palette changes: current scene `#C4E5F5` / title `#17354A`; other scenes remain `#111823` / white. The unconfigured transparent symbol, icon spacing, title sizing, action identity, scene selection, event callbacks, camera logic, and other commands are unchanged. Existing 0.4.17 assignments remain valid.
+Version 0.4.18 changed only the configured Show Scene image palette: current scene `#C4E5F5` / title `#17354A`; other scenes remain `#111823` / white. The unconfigured transparent symbol, icon spacing, title sizing, action identity, scene selection, event callbacks, camera logic, and other commands are unchanged. Existing 0.4.17 assignments remain valid.
 
-The existing SDK/native host scene-render assertions now check dark captions on the light background and white captions on inactive buttons. Glyph detection is restricted to purple so the light blue fill is not mistaken for the icon. The native saved-profile renderer covers simulated scene changes and both short/long labels. The separate unconfigured editor renderer still has no selected-scene context; this change does not resolve that pre-existing host limitation.
+The existing SDK/native host scene-render assertions now check dark captions on the light background and white captions on inactive buttons. Glyph detection is restricted to purple so the light blue fill is not mistaken for the icon. The native saved-profile renderer covers simulated scene changes and both short/long labels. The separate unconfigured editor renderer still has no selected-scene context; the 0.4.18 color-only change did not resolve that host limitation.
 
 ## Rename in 0.4.17
 
@@ -64,9 +72,10 @@ Capture filtering, case-insensitive scene matching, native `toggleLayer` argumen
 | Saved picker edits, plugin reload, profile replacement/deletion | Updates without a new press or Meld event |
 | Incomplete/invalid JSON and conflicting copied aliases | Neutral state, then recovery after correction |
 | Profile content | Plugin does not modify it |
-| SDK suite | Passed: 1,612 checks and 50 renders; actions, picker population, mixed-case schema/names, groups and exclusions |
-| Native host suite | Passed: 316 checks against Service 6.4.2.3414 |
-| Actual Options+ frontend, real Meld, physical keypad | 0.4.16 camera fix confirmed by maintainer; 0.4.18 scene palette not yet tested on hardware |
+| SDK suite | Passed: 1,606 checks and 50 renders; actions, picker population, mixed-case schema/names, groups and exclusions |
+| Native scene suite | Passed: 133 checks against Service 6.4.2.3414; actual standalone subscriptions, saved aliases, per-button titles/backgrounds, native multistate icons, press/external changes, and compatibility |
+| Native host suite | Passed: 315 checks against Service 6.4.2.3414 |
+| Actual Options+ frontend, real Meld, physical keypad | 0.4.16 camera fix confirmed by maintainer; 0.4.18 failed physical highlighting; 0.4.19 awaits physical confirmation |
 
 The host suite uses a temporary Applications directory populated by Logitech's native profile serializer. It does not scan real user profiles. Only the final IPC image transport is replaced with a frame collector; image generation and event matching use native host code.
 
@@ -80,6 +89,8 @@ For the original **0.4.14** installer, unpack it and set `MELD_REPRO_LEGACY_CAME
 
 For the original **0.4.15** installer, use `MELD_REPRO_EDITOR_CAMERA=1` with the same assembly/package overrides. It succeeds only when the modern saved state changes but the native standalone image with the selected editor parameters stays unchanged.
 
+For the original **0.4.18** installer, use `scene-render-check` with `MELD_REPRO_SCENE_0418=1`, `-p:PluginAssemblyPath=/path/to/old-package/bin/MeldStudioControlsPlugin.dll`, and pass that package as the first program argument. It succeeds only when native saved-profile colors update but the standalone renderer ignores distinct Scene dictionaries and stays unchanged. Rebuild the harness against the current package after a negative-control run.
+
 Keep `MELD_EXPECTED_HOST_VERSION=6.4.2.3414` for these runs. The suite checks that the loaded plugin DLL matches the supplied package.
 
 ## Evidence
@@ -89,6 +100,8 @@ Keep `MELD_EXPECTED_HOST_VERSION=6.4.2.3414` for these runs. The suite checks th
 - [Selected long scene title](docs/scene-selected-long-80.png)
 - [SDK output](docs/test-output.txt)
 - [Native host output](docs/host-render-output.txt)
+- [Native standalone scene checks](docs/scene-render-output.txt)
+- [0.4.18 scene rendering failure](docs/scene-render-regression-0418.txt)
 - [0.4.14 alias regression](docs/camera-saved-profile-regression-0414.txt)
 - [0.4.15 standalone-render regression](docs/camera-render-regression-0415.txt)
 - [Visible camera](docs/host-camera-active-116.png)

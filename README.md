@@ -1,10 +1,10 @@
-# Meld Studio Controls — 0.4.18
+# Meld Studio Controls — 0.4.19
 
 By **SynapseIX** · [Project homepage](https://github.com/SynapseIX/meld-mx-keypad-plugin) · [Report a problem](https://github.com/SynapseIX/meld-mx-keypad-plugin/issues)
 
 Control Meld Studio from your keypad: streaming, recording, microphone mute, camera visibility, virtual camera, scenes, clips, and screenshots.
 
-**0.4.18 updates the active Show Scene button to a subtle baby blue background with a dark navy title.** Inactive scenes keep their dark background and white title. Scene switching, pickers, camera/microphone controls, and other actions are unchanged.
+**0.4.19 fixes how Show Scene delivers live background changes to the device renderer.** The current scene uses baby blue with a dark navy title; other scenes use a dark background with white text. Replace existing **Show Scene** buttons once to use the new action. Camera, microphone, stream, recording, and other controls are unchanged.
 
 **0.4.17 renamed the package to `MeldStudioControls` for Marketplace submission.** The visible name in Options+ remains **Meld Studio**. The controls retain the 0.4.16 implementation.
 
@@ -27,7 +27,7 @@ You do not need to write code or install developer tools. Use the **`.lplug4` in
 - A Logitech **MX Creative Keypad**, connected to your Windows PC or Mac.
 - [Logi Options+](https://www.logitech.com/software/logi-options-plus.html), which also installs Logi Plugin Service.
 - [Meld Studio](https://meldstudio.co/) on the **same computer**, with your session open.
-- The prebuilt **`MeldStudioControls-0.4.18.lplug4`** file supplied with this release.
+- The prebuilt **`MeldStudioControls-0.4.19.lplug4`** file supplied with this release.
 
 The reported working setup uses **Options+ 2.9.984725** and **Logi Plugin Service 6.4.2.3414**. The package declares Service 6.3 as its minimum; older versions have not received the same verification.
 
@@ -41,7 +41,7 @@ Set up your stream destinations, recording options, clips, and screenshot save l
 
 ### 2. Install and assign buttons
 
-1. Double-click **`MeldStudioControls-0.4.18.lplug4`** and follow Logitech's installation prompt. Keep the extension; do not unzip the file.
+1. Double-click **`MeldStudioControls-0.4.19.lplug4`** and follow Logitech's installation prompt. Keep the extension; do not unzip the file.
 2. Open Options+. In its settings, use **Restart Logi Plugin Service** so the new version loads. Reopen Options+ if needed.
 3. Select your **MX Creative Keypad** and open the profile/page you want to customize.
 4. Open **All Actions → Installed Plugins → Meld Studio** and drag an action onto a keypad button.
@@ -60,7 +60,7 @@ Each toggle is one action: press once to change its state, then press again to c
 | **Toggle Microphone** | Mutes or unmutes the microphone track configured below | Live microphone or crossed-out microphone |
 | **Toggle Camera** | Shows or hides the chosen camera layer in the scene currently shown | Orange camera when visible; crossed-out camera when hidden |
 | **Toggle Virtual Camera** | Starts or stops Meld's virtual camera | State graphic when Meld supplies its status; otherwise neutral |
-| **Show Scene** | Switches to the scene chosen in its picker | Scene icon and chosen scene name; baby blue background with dark navy text when live, dark background with white text otherwise (host renderer permitting) |
+| **Show Scene** | Switches to the scene chosen in its picker | Scene icon and chosen scene name; baby blue background with dark navy text when live, dark background with white text otherwise |
 | **Save Clip** | Saves a replay clip using Meld's clip settings | Scissors icon |
 | **Screenshot** | Saves a screenshot using Meld's screenshot settings | Screenshot icon |
 
@@ -70,7 +70,7 @@ A neutral gray toggle icon means its state or target is unavailable. It does not
 
 Drag **Meld Studio → Scenes → Show Scene** onto a button, open its settings, and choose a scene from **Meld scene**. Save/apply if Options+ prompts you. Add the same action to more buttons and choose a different scene for each, such as **Starting Soon**, **Main**, and **Be Right Back**.
 
-The highlight follows the scene Meld reports as currently shown, including changes made directly in Meld. Switching scenes removes the highlight from the previous scene button. Keep default button artwork; a custom icon can replace the dynamic image. See the renderer limitation under Known issues if the background does not change.
+The highlight follows the scene Meld reports as currently shown, including changes made directly in Meld. Switching scenes removes the highlight from the previous scene button. Keep default button artwork; a custom icon can replace the dynamic image. If you upgraded from 0.4.18 or earlier, replace old Show Scene assignments as described below.
 
 The picker reads all scenes in your open Meld session; there is no fixed scene count. If you rename a scene, select it again. Use unique scene names where possible. If duplicate names are reordered, reselect the affected buttons.
 
@@ -98,14 +98,18 @@ This version selects the microphone by its track name; there is no microphone pi
 
 ### Update from an older version
 
-**From 0.4.17:** Install `MeldStudioControls-0.4.18.lplug4`, restart Logi Plugin Service, and reopen Options+. The plugin ID and saved assignments are unchanged, so you do not need to re-add your buttons.
+**From 0.4.17 or 0.4.18:** Install `MeldStudioControls-0.4.19.lplug4`, restart Logi Plugin Service, and reopen Options+. Keep all camera, microphone, streaming, recording, and other button assignments.
+
+For each **Show Scene** button, note its scene, remove that assignment, drag the new **Meld Studio → Scenes → Show Scene** action onto the button, and choose the same scene in **Meld scene**. Keep its default icon. This one-time replacement is necessary because the old action uses a rendering path that loses its scene selection. Old scene buttons still execute their original scene-switch command, but cannot gain the new live highlight. The old action is hidden from the action list so only one Show Scene action appears.
+
+After replacing scene buttons, switch between two scenes using the keypad and then directly in Meld. The currently shown scene should be blue, and the previous one should return to dark.
 
 **From 0.4.16 or earlier:** Follow the steps below.
 
 **0.4.17 has a new plugin ID: `MeldStudioControls`.** Options+ treats it as a different plugin from `MeldMxKeypad`, so old button assignments do not automatically transfer.
 
 1. Note your current Meld button assignments and their scene/camera selections.
-2. Remove the old Meld plugin through Options+ and install **`MeldStudioControls-0.4.18.lplug4`**. Both packages display as **Meld Studio**, so use the version/author details to identify the old entry.
+2. Remove the old Meld plugin through Options+ and install **`MeldStudioControls-0.4.19.lplug4`**. Both packages display as **Meld Studio**, so use the version/author details to identify the old entry.
 3. Restart Logi Plugin Service and reopen Options+.
 4. Re-add your Meld actions from the renamed plugin and select the scene or camera for each configured button. Keep default artwork for dynamic icons.
 5. Check that camera and microphone icons follow changes made both from the keypad and directly in Meld.
@@ -121,12 +125,12 @@ You do not need to delete your keypad profiles. Save the 0.4.16 installer if you
 | No scenes appear | Open a Meld session containing scenes and let it finish loading. |
 | No camera/capture layers appear | Show the intended scene in Meld and check that it contains a camera/capture layer. Reopen the picker. Identifiable image, browser, and media layers are excluded. |
 | The camera icon is gray | Check that the selected layer exists in the currently shown scene. Use the same camera name across scenes, avoid duplicates, and save the selection. |
-| Camera toggles but its graphic stays unchanged, or an old label remains | Confirm 0.4.18 is installed, restart the service, assign the action from the renamed plugin, and reset custom artwork to default. |
+| Camera toggles but its graphic stays unchanged, or an old label remains | Confirm 0.4.19 is installed, restart the service, assign the action from the renamed plugin, and reset custom artwork to default. |
 | The microphone is gray or does nothing | Rename the intended audio track to **Mic** or **Microphone** and remove duplicate matching names. |
 | A scene button stops working after editing the session | Reselect the scene, especially after renaming it or reordering duplicate names. |
 | Stream/recording does not start | Check Meld for missing settings, confirmation prompts, or errors. Icons change only after Meld reports the new state. |
 | Virtual Camera stays gray | Some Meld versions do not report virtual-camera status. The toggle can still work; check the output in the receiving app. |
-| Show Scene's background does not change | Some Options+ rendering paths omit the selected scene when requesting an image. The caption and scene-switch command still work. |
+| Show Scene's background does not change | Restart Logi Plugin Service after installing 0.4.19, replace old Show Scene assignments with the current action, select the scene again, and keep default artwork. Older assignments retain their original renderer. |
 
 The plugin uses the fixed local address **`ws://127.0.0.1:13376`** and retries automatically. There is no setting for controlling Meld on a second computer.
 
@@ -176,8 +180,8 @@ The tool contains `PluginApi.dll`, `LoupedeckShared.dll`, and `SkiaSharp.dll` un
 ```sh
 MELD_SDK_DIR="$(pwd)/.tools/.store/logiplugintool/6.1.4.22672/logiplugintool/6.1.4.22672/tools/net8.0/any/"
 dotnet build src/MeldStudioControlsPlugin.csproj -c Release -p:SkipHostActions=true "-p:PluginApiDir=$MELD_SDK_DIR"
-./.tools/logiplugintool pack bin/Release/ MeldStudioControls-0.4.18.lplug4
-./.tools/logiplugintool verify MeldStudioControls-0.4.18.lplug4
+./.tools/logiplugintool pack bin/Release/ MeldStudioControls-0.4.19.lplug4
+./.tools/logiplugintool verify MeldStudioControls-0.4.19.lplug4
 ```
 
 **Windows PowerShell:**
@@ -185,8 +189,8 @@ dotnet build src/MeldStudioControlsPlugin.csproj -c Release -p:SkipHostActions=t
 ```powershell
 $meldSdkDir = (Resolve-Path ".tools/.store/logiplugintool/6.1.4.22672/logiplugintool/6.1.4.22672/tools/net8.0/any").Path.Replace('\', '/') + '/'
 dotnet build src/MeldStudioControlsPlugin.csproj -c Release -p:SkipHostActions=true "-p:PluginApiDir=$meldSdkDir"
-& .\.tools\logiplugintool.exe pack bin/Release/ MeldStudioControls-0.4.18.lplug4
-& .\.tools\logiplugintool.exe verify MeldStudioControls-0.4.18.lplug4
+& .\.tools\logiplugintool.exe pack bin/Release/ MeldStudioControls-0.4.19.lplug4
+& .\.tools\logiplugintool.exe verify MeldStudioControls-0.4.19.lplug4
 ```
 
 Continue only after each command succeeds. Quote the whole `-p:PluginApiDir=...` argument for paths containing spaces. **Keep its trailing slash**: the project appends DLL filenames directly.
@@ -217,7 +221,7 @@ The protocol check tests communication with a mock Meld server. The action suite
 
 ### 5. Optional native-host regression tests
 
-This suite checks saved camera assignments and the native image paths that previously regressed. It is tied to **Logi Plugin Service 6.4.2.3414** and requires **.NET 10**. Build the plugin first using the .NET 8-compatible references above. Logitech service binaries are not included in the source archive.
+These suites check saved camera and scene assignments and the native image paths that previously regressed. It is tied to **Logi Plugin Service 6.4.2.3414** and requires **.NET 10**. Build the plugin first using the .NET 8-compatible references above. Logitech service binaries are not included in the source archive.
 
 Use your installed service's directory containing `PluginApi.dll`, `LoupedeckShared.dll`, `LoupedeckService.dll`, and `SkiaSharp.dll`. The commands show typical locations; adjust them if your installation differs.
 
@@ -226,6 +230,7 @@ Use your installed service's directory containing `PluginApi.dll`, `LoupedeckSha
 ```sh
 MELD_HOST_DIR="/Applications/Utilities/LogiPluginService.app/Contents/MonoBundle/"
 MELD_EXPECTED_HOST_VERSION=6.4.2.3414 dotnet run --project host-render-check/host-render-check.csproj -c Release "-p:HostAssemblyDir=$MELD_HOST_DIR" -- bin/Release test-results/host
+MELD_EXPECTED_HOST_VERSION=6.4.2.3414 dotnet run --project scene-render-check/scene-render-check.csproj -c Release "-p:HostAssemblyDir=$MELD_HOST_DIR" -- bin/Release test-results/scenes
 ```
 
 **Windows PowerShell:**
@@ -234,6 +239,7 @@ MELD_EXPECTED_HOST_VERSION=6.4.2.3414 dotnet run --project host-render-check/hos
 $meldHostDir = 'C:/Program Files/Logi/LogiPluginService/'
 $env:MELD_EXPECTED_HOST_VERSION = '6.4.2.3414'
 dotnet run --project host-render-check/host-render-check.csproj -c Release "-p:HostAssemblyDir=$meldHostDir" -- bin/Release test-results/host
+dotnet run --project scene-render-check/scene-render-check.csproj -c Release "-p:HostAssemblyDir=$meldHostDir" -- bin/Release test-results/scenes
 ```
 
 On Linux, provide your own authorized service assemblies and add `-p:SkiaSharpAssemblyPath=/path/to/linux-compatible/SkiaSharp.dll` if the service's Skia assembly is platform-specific. The .NET 8 SDK directory's compatible Skia assembly was used for the recorded Linux run.
@@ -245,10 +251,10 @@ Run this suite after the others finish, with Meld still closed. It uses an isola
 | Path | Purpose |
 | --- | --- |
 | `src/MeldClient.cs` | Meld connection, session data, and commands |
-| `src/Actions/` | Actions, target matching, and saved camera selection lookup |
+| `src/Actions/` | Actions, target matching, and saved camera/scene selection lookup |
 | `src/icons/` | Embedded button artwork |
 | `src/package/metadata/` | Plugin identity, version, app icon, and default button template |
-| `protocol-check/`, `action-check/`, `host-render-check/` | Test programs |
+| `protocol-check/`, `action-check/`, `host-render-check/`, `scene-render-check/` | Test programs |
 | `TESTING.md`, `docs/` | Regression notes and recorded evidence |
 
 - **`dotnet` not found:** install the SDK and open a new terminal.
@@ -267,16 +273,23 @@ SDK references: [environment setup](https://logitech.github.io/actions-sdk-docs/
 
 - **All assignments from the old `MeldMxKeypad` package need to be re-added** for `MeldStudioControls`. Custom icons can override dynamic artwork.
 - **Virtual-camera state depends on Meld.** Without a supported status value, the toggle works but its icon stays neutral.
-- **Show Scene highlighting depends on the Options+ renderer.** Some paths omit the selected scene when requesting an image, so the background can remain neutral while the caption and switching work.
+- **Old Show Scene assignments must be replaced once.** They continue switching scenes but retain the old rendering path. Version 0.4.19 provides one new visible Show Scene action with a native scene picker and per-button state.
+- **Saved scene selections must be readable.** Missing, invalid, or conflicting alias mappings remain neutral; the plugin never guesses the last scene pressed or modifies profiles.
 - **Capture identification is limited by Meld's session data.** Screen/game captures may appear alongside webcams.
 - **Camera selections must be saved and readable.** Unreadable, incomplete, or conflicting saved selections produce a neutral camera until resolved.
 - **Compatibility is version-specific.** The maintainer confirmed the camera fix on the physical keypad with the reported Options+/service setup above. Automated runs use a mock Meld server and real Logitech managed assemblies; they do not certify every OS, Meld version, or later Options+ release.
+
+### What changed in 0.4.19
+
+Show Scene now uses the native list/multistate rendering mechanism used by the working camera action. Each saved button resolves its own scene selection before publishing state and drawing its title/background. Pressing it still sends the same native `showScene(sceneId)` command; it never toggles the selected scene off. Meld changes update all assigned buttons, including multiple buttons assigned to the same scene.
+
+The old Action Editor action is hidden from the action list but retained so existing assignments still switch scenes. Replace only Show Scene assignments once to enable the fixed rendering. All camera/microphone code, native commands, existing artwork, and the plugin ID are unchanged. No user profile is edited or migrated automatically.
 
 ### What changed in 0.4.18
 
 Changed only the configured Show Scene image colors: the scene currently shown uses a soft baby blue background (`#C4E5F5`) and a dark navy title (`#17354A`). Other scenes retain their dark background and white title. Icon spacing, title sizing, scene resolution, event handling, all commands, and all toggle behavior remain unchanged. The unconfigured transparent icon is preserved to avoid a nested button in the editor preview.
 
-This release keeps the `MeldStudioControls` ID and existing button assignments. Native saved-profile rendering is checked with simulated scene changes; actual Options+ and keypad rendering still need device testing. The existing host-renderer limitation remains documented above and in Troubleshooting.
+Version 0.4.18 kept the `MeldStudioControls` ID and existing assignments. Its saved-profile rendering checks passed, but physical testing confirmed that the device background still did not change. Version 0.4.19 addresses the separate standalone rendering path; replace old Show Scene assignments as described above.
 
 ### What changed in 0.4.17
 

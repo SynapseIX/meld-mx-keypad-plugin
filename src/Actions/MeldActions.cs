@@ -179,6 +179,9 @@ public sealed class ShowSceneCommand : ActionEditorCommand
 
     public ShowSceneCommand()
     {
+        // Retain old assignments and their commands. New buttons use the
+        // parameter-aware native list action so device images can identify them.
+        this.SetHidden();
         this.Name = "ShowScene";
         this.DisplayName = "Show Scene";
         this.Description = "Choose a scene from your current Meld session";
