@@ -1,10 +1,12 @@
-# Meld Studio Controls — 0.4.17
+# Meld Studio Controls — 0.4.18
 
 By **SynapseIX** · [Project homepage](https://github.com/SynapseIX/meld-mx-keypad-plugin) · [Report a problem](https://github.com/SynapseIX/meld-mx-keypad-plugin/issues)
 
 Control Meld Studio from your keypad: streaming, recording, microphone mute, camera visibility, virtual camera, scenes, clips, and screenshots.
 
-**0.4.17 renames the package to `MeldStudioControls` for Marketplace submission.** The visible name in Options+ remains **Meld Studio**. The controls retain the 0.4.16 implementation.
+**0.4.18 updates the active Show Scene button to a subtle baby blue background with a dark navy title.** Inactive scenes keep their dark background and white title. Scene switching, pickers, camera/microphone controls, and other actions are unchanged.
+
+**0.4.17 renamed the package to `MeldStudioControls` for Marketplace submission.** The visible name in Options+ remains **Meld Studio**. The controls retain the 0.4.16 implementation.
 
 **0.4.16 is the confirmed working camera baseline.** The maintainer confirmed the fix on a physical keypad after the automated regression checks passed. Toggle Camera has one picker, uses an icon without a text label, and follows the selected layer's visibility.
 
@@ -25,7 +27,7 @@ You do not need to write code or install developer tools. Use the **`.lplug4` in
 - A Logitech **MX Creative Keypad**, connected to your Windows PC or Mac.
 - [Logi Options+](https://www.logitech.com/software/logi-options-plus.html), which also installs Logi Plugin Service.
 - [Meld Studio](https://meldstudio.co/) on the **same computer**, with your session open.
-- The prebuilt **`MeldStudioControls-0.4.17.lplug4`** file supplied with this release.
+- The prebuilt **`MeldStudioControls-0.4.18.lplug4`** file supplied with this release.
 
 The reported working setup uses **Options+ 2.9.984725** and **Logi Plugin Service 6.4.2.3414**. The package declares Service 6.3 as its minimum; older versions have not received the same verification.
 
@@ -39,7 +41,7 @@ Set up your stream destinations, recording options, clips, and screenshot save l
 
 ### 2. Install and assign buttons
 
-1. Double-click **`MeldStudioControls-0.4.17.lplug4`** and follow Logitech's installation prompt. Keep the extension; do not unzip the file.
+1. Double-click **`MeldStudioControls-0.4.18.lplug4`** and follow Logitech's installation prompt. Keep the extension; do not unzip the file.
 2. Open Options+. In its settings, use **Restart Logi Plugin Service** so the new version loads. Reopen Options+ if needed.
 3. Select your **MX Creative Keypad** and open the profile/page you want to customize.
 4. Open **All Actions → Installed Plugins → Meld Studio** and drag an action onto a keypad button.
@@ -58,7 +60,7 @@ Each toggle is one action: press once to change its state, then press again to c
 | **Toggle Microphone** | Mutes or unmutes the microphone track configured below | Live microphone or crossed-out microphone |
 | **Toggle Camera** | Shows or hides the chosen camera layer in the scene currently shown | Orange camera when visible; crossed-out camera when hidden |
 | **Toggle Virtual Camera** | Starts or stops Meld's virtual camera | State graphic when Meld supplies its status; otherwise neutral |
-| **Show Scene** | Switches to the scene chosen in its picker | Scene icon and chosen scene name; highlighting depends on the host renderer |
+| **Show Scene** | Switches to the scene chosen in its picker | Scene icon and chosen scene name; baby blue background with dark navy text when live, dark background with white text otherwise (host renderer permitting) |
 | **Save Clip** | Saves a replay clip using Meld's clip settings | Scissors icon |
 | **Screenshot** | Saves a screenshot using Meld's screenshot settings | Screenshot icon |
 
@@ -67,6 +69,8 @@ A neutral gray toggle icon means its state or target is unavailable. It does not
 ### Set up scene buttons
 
 Drag **Meld Studio → Scenes → Show Scene** onto a button, open its settings, and choose a scene from **Meld scene**. Save/apply if Options+ prompts you. Add the same action to more buttons and choose a different scene for each, such as **Starting Soon**, **Main**, and **Be Right Back**.
+
+The highlight follows the scene Meld reports as currently shown, including changes made directly in Meld. Switching scenes removes the highlight from the previous scene button. Keep default button artwork; a custom icon can replace the dynamic image. See the renderer limitation under Known issues if the background does not change.
 
 The picker reads all scenes in your open Meld session; there is no fixed scene count. If you rename a scene, select it again. Use unique scene names where possible. If duplicate names are reordered, reselect the affected buttons.
 
@@ -94,10 +98,14 @@ This version selects the microphone by its track name; there is no microphone pi
 
 ### Update from an older version
 
+**From 0.4.17:** Install `MeldStudioControls-0.4.18.lplug4`, restart Logi Plugin Service, and reopen Options+. The plugin ID and saved assignments are unchanged, so you do not need to re-add your buttons.
+
+**From 0.4.16 or earlier:** Follow the steps below.
+
 **0.4.17 has a new plugin ID: `MeldStudioControls`.** Options+ treats it as a different plugin from `MeldMxKeypad`, so old button assignments do not automatically transfer.
 
 1. Note your current Meld button assignments and their scene/camera selections.
-2. Remove the old Meld plugin through Options+ and install **`MeldStudioControls-0.4.17.lplug4`**. Both packages display as **Meld Studio**, so use the version/author details to identify the old entry.
+2. Remove the old Meld plugin through Options+ and install **`MeldStudioControls-0.4.18.lplug4`**. Both packages display as **Meld Studio**, so use the version/author details to identify the old entry.
 3. Restart Logi Plugin Service and reopen Options+.
 4. Re-add your Meld actions from the renamed plugin and select the scene or camera for each configured button. Keep default artwork for dynamic icons.
 5. Check that camera and microphone icons follow changes made both from the keypad and directly in Meld.
@@ -113,7 +121,7 @@ You do not need to delete your keypad profiles. Save the 0.4.16 installer if you
 | No scenes appear | Open a Meld session containing scenes and let it finish loading. |
 | No camera/capture layers appear | Show the intended scene in Meld and check that it contains a camera/capture layer. Reopen the picker. Identifiable image, browser, and media layers are excluded. |
 | The camera icon is gray | Check that the selected layer exists in the currently shown scene. Use the same camera name across scenes, avoid duplicates, and save the selection. |
-| Camera toggles but its graphic stays unchanged, or an old label remains | Confirm 0.4.17 is installed, restart the service, assign the action from the renamed plugin, and reset custom artwork to default. |
+| Camera toggles but its graphic stays unchanged, or an old label remains | Confirm 0.4.18 is installed, restart the service, assign the action from the renamed plugin, and reset custom artwork to default. |
 | The microphone is gray or does nothing | Rename the intended audio track to **Mic** or **Microphone** and remove duplicate matching names. |
 | A scene button stops working after editing the session | Reselect the scene, especially after renaming it or reordering duplicate names. |
 | Stream/recording does not start | Check Meld for missing settings, confirmation prompts, or errors. Icons change only after Meld reports the new state. |
@@ -168,8 +176,8 @@ The tool contains `PluginApi.dll`, `LoupedeckShared.dll`, and `SkiaSharp.dll` un
 ```sh
 MELD_SDK_DIR="$(pwd)/.tools/.store/logiplugintool/6.1.4.22672/logiplugintool/6.1.4.22672/tools/net8.0/any/"
 dotnet build src/MeldStudioControlsPlugin.csproj -c Release -p:SkipHostActions=true "-p:PluginApiDir=$MELD_SDK_DIR"
-./.tools/logiplugintool pack bin/Release/ MeldStudioControls-0.4.17.lplug4
-./.tools/logiplugintool verify MeldStudioControls-0.4.17.lplug4
+./.tools/logiplugintool pack bin/Release/ MeldStudioControls-0.4.18.lplug4
+./.tools/logiplugintool verify MeldStudioControls-0.4.18.lplug4
 ```
 
 **Windows PowerShell:**
@@ -177,8 +185,8 @@ dotnet build src/MeldStudioControlsPlugin.csproj -c Release -p:SkipHostActions=t
 ```powershell
 $meldSdkDir = (Resolve-Path ".tools/.store/logiplugintool/6.1.4.22672/logiplugintool/6.1.4.22672/tools/net8.0/any").Path.Replace('\', '/') + '/'
 dotnet build src/MeldStudioControlsPlugin.csproj -c Release -p:SkipHostActions=true "-p:PluginApiDir=$meldSdkDir"
-& .\.tools\logiplugintool.exe pack bin/Release/ MeldStudioControls-0.4.17.lplug4
-& .\.tools\logiplugintool.exe verify MeldStudioControls-0.4.17.lplug4
+& .\.tools\logiplugintool.exe pack bin/Release/ MeldStudioControls-0.4.18.lplug4
+& .\.tools\logiplugintool.exe verify MeldStudioControls-0.4.18.lplug4
 ```
 
 Continue only after each command succeeds. Quote the whole `-p:PluginApiDir=...` argument for paths containing spaces. **Keep its trailing slash**: the project appends DLL filenames directly.
@@ -263,6 +271,12 @@ SDK references: [environment setup](https://logitech.github.io/actions-sdk-docs/
 - **Capture identification is limited by Meld's session data.** Screen/game captures may appear alongside webcams.
 - **Camera selections must be saved and readable.** Unreadable, incomplete, or conflicting saved selections produce a neutral camera until resolved.
 - **Compatibility is version-specific.** The maintainer confirmed the camera fix on the physical keypad with the reported Options+/service setup above. Automated runs use a mock Meld server and real Logitech managed assemblies; they do not certify every OS, Meld version, or later Options+ release.
+
+### What changed in 0.4.18
+
+Changed only the configured Show Scene image colors: the scene currently shown uses a soft baby blue background (`#C4E5F5`) and a dark navy title (`#17354A`). Other scenes retain their dark background and white title. Icon spacing, title sizing, scene resolution, event handling, all commands, and all toggle behavior remain unchanged. The unconfigured transparent icon is preserved to avoid a nested button in the editor preview.
+
+This release keeps the `MeldStudioControls` ID and existing button assignments. Native saved-profile rendering is checked with simulated scene changes; actual Options+ and keypad rendering still need device testing. The existing host-renderer limitation remains documented above and in Troubleshooting.
 
 ### What changed in 0.4.17
 

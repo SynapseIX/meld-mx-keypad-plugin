@@ -146,16 +146,19 @@ using (var unconfigured = SKBitmap.Decode(sceneBytes)) {
         "Unconfigured scene image contains a baked white caption");
 }
 Check(!Directory.Exists(Path.Combine(root, "icontemplates")) || !Directory.GetFiles(Path.Combine(root, "icontemplates"), "*.ict").Any(), "Runtime actions must not have template overrides");
-byte[] RenderScene(ActionEditorActionParameters selection, int size, string suffix) {
+byte[] RenderScene(ActionEditorActionParameters selection, int size, string suffix, bool active) {
     Check(sceneCollection.TryGetCommandImage(scene.Name, selection, PluginImageSize.None, out var source), "Scene callback failed");
     Check(ActionIcon.TryReadFromFile(Path.Combine(root, "metadata/DefaultIconTemplate.ict"), out var layout), "Missing default layout");
     layout.SetImage(ImageBytes(source, "Live scene source"));
     using var image = ActionIconBuilder.CreateImage(size, size, layout, ActionImageBuilderFlags.None);
     var bytes = image.ToArray();
     using var bitmap = SKBitmap.Decode(bytes);
-    var glyphRows = bitmap.Pixels.Select((p, i) => (p, y:i / size)).Where(x => x.p.Blue > 220 && x.p.Red < 210 && x.p.Red > 110 && x.p.Green > 90).Select(x => x.y).ToArray();
+    var glyphRows = bitmap.Pixels.Select((p, i) => (p, y:i / size)).Where(x => x.p.Blue > x.p.Green + 40 && x.p.Red < 210 && x.p.Red > 110 && x.p.Green > 90).Select(x => x.y).ToArray();
     Check(glyphRows.Length > 40 && glyphRows.Min() >= size * .11, "Scene icon missing or top padding too small");
-    Check(bitmap.Pixels.Where((p,i) => i / size > size * .54).Count(p => p.Red > 220 && p.Green > 220 && p.Blue > 220) > 65, "Larger scene caption missing");
+    Check(bitmap.GetPixel(0,0) == (active ? new SKColor(0xc4,0xe5,0xf5) : new SKColor(0x11,0x18,0x23)), "Wrong selected-scene background");
+    Check(bitmap.Pixels.Where((p,i) => i / size > size * .54).Count(p => active
+        ? p.Red < 80 && p.Green < 100 && p.Blue < 125
+        : p.Red > 220 && p.Green > 220 && p.Blue > 220) > 65, "Contrasting scene caption missing");
     Check(bitmap.Pixels.Skip((size - 3)*size).All(p => p == bitmap.GetPixel(0,0)), "Scene caption clips at bottom");
     File.WriteAllBytes(Path.Combine(output, $"ShowScene-{suffix}-{size}.png"), bytes);
     return bytes;
@@ -260,8 +263,8 @@ Check(mock.Calls.Contains("sendCommand:[\"meld.recordClip\"]") && mock.Calls.Con
 var shortChoice = Picker().Items.Single(x => x.DisplayName == "VALORANT");
 var shortParameters = new ActionEditorActionParameters(new Dictionary<string,string>{{"Scene",shortChoice.Name}});
 foreach (var size in new[]{80,116}) {
-    var live=RenderScene(shortParameters,size,"short-active");
-    var inactive=RenderScene(parameters,size,"long-inactive");
+    var live=RenderScene(shortParameters,size,"short-active",true);
+    var inactive=RenderScene(parameters,size,"long-inactive",false);
     using var a=SKBitmap.Decode(live); using var b=SKBitmap.Decode(inactive);
     Check(a.GetPixel(0,0)!=b.GetPixel(0,0), "Active scene background not distinct");
 }
@@ -269,8 +272,8 @@ Check((bool)Call(scene, "RunCommand", parameters), "Selected scene did not execu
 await Until(() => mock.Calls.Contains("showScene:[\"scene-1\"]"), "Show Scene sent wrong scene ID");
 await Until(() => CameraLabel()=="Camera", "Camera must not target a layer in a different scene");
 foreach(var size in new[]{80,116}) {
-    RenderScene(shortParameters,size,"short-inactive");
-    RenderScene(parameters,size,"long-active");
+    RenderScene(shortParameters,size,"short-inactive",false);
+    RenderScene(parameters,size,"long-active",true);
 }
 RejectCamera(null,"Camera toggled a non-live scene");
 mock.CurrentScene=0; await mock.PublishAsync();
